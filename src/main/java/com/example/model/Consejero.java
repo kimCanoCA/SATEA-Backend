@@ -1,10 +1,13 @@
 package com.example.model;
 
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -31,30 +34,42 @@ public class Consejero {
 	
 	@Column(name="email")
 	private String email;
+	
+	// Relación Consejero -> Estudiante (Uno a Muchos)
+    @OneToMany
+    @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
+    private List<Estudiante> estudiantes;
 
-	public Consejero() {
+    // Relación Consejero -> Recomendacion (Uno a Muchos)
+    @OneToMany
+    @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
+    private List<Recomendacion> recomendaciones;
+	
+    public Consejero() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Consejero(Long idConsejero, String username, String password, String rol, Date fecha_creacion, String nombre,
-			String email) {
+	public Consejero(Long id_Consejero, String username, String password, String rol, Date fecha_creacion,
+			String nombre, String email, List<Estudiante> estudiantes, List<Recomendacion> recomendaciones) {
 		super();
-		this.id_Consejero = idConsejero;
+		this.id_Consejero = id_Consejero;
 		this.username = username;
 		this.password = password;
 		this.rol = rol;
 		this.fecha_creacion = fecha_creacion;
 		this.nombre = nombre;
 		this.email = email;
+		this.estudiantes = estudiantes;
+		this.recomendaciones = recomendaciones;
 	}
 
-	public Long getIdConsejero() {
+	public Long getId_Consejero() {
 		return id_Consejero;
 	}
 
-	public void setIdConsejero(Long idConsejero) {
-		this.id_Consejero = idConsejero;
+	public void setId_Consejero(Long id_Consejero) {
+		this.id_Consejero = id_Consejero;
 	}
 
 	public String getUsername() {
@@ -104,6 +119,22 @@ public class Consejero {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	
+
+	public List<Estudiante> getEstudiantes() {
+		return estudiantes;
+	}
+
+	public void setEstudiantes(List<Estudiante> estudiantes) {
+		this.estudiantes = estudiantes;
+	}
+
+	public List<Recomendacion> getRecomendaciones() {
+		return recomendaciones;
+	}
+
+	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
+		this.recomendaciones = recomendaciones;
+	}
+
 	
 }

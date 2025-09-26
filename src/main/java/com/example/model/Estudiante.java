@@ -1,13 +1,18 @@
 package com.example.model;
 
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "estudiante")
+@Table(name = "estudiantes")
 public class Estudiante {
 	@Id
 	@Column(name = "id_estudiante")
@@ -86,13 +91,28 @@ public class Estudiante {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	// Relación con Consejero (Muchos a Uno)
+    @ManyToOne
+    @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
+    private Consejero consejero;
+
+    // Relación con AnalisisRiesgo (Muchos a Uno)
+    @ManyToOne
+    @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
+    private Analisis_Riesgo analisis_riesgo;
+
+    // Relación Estudiante -> Recomendacion (Uno a Muchos)
+    @OneToMany
+    @JoinColumn(name = "id_estudiante", referencedColumnName = "id_estudiante")
+    private List<Recomendacion> recomendaciones;
 
 	public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
 			Integer mentalHealthHistory, Integer depression, Integer headache, Integer bloodPressure,
 			Integer sleepQuality, Integer breathingProblem, Integer noiseLevel, Integer livingConditions,
 			Integer safety, Integer basicNeeds, Integer academicPerformance, Integer studyLoad,
 			Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
-			Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel) {
+			Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel,
+			Consejero consejero, Analisis_Riesgo analisis_riesgo, List<Recomendacion> recomendaciones) {
 		super();
 		this.idEstudiante = idEstudiante;
 		this.nombre = nombre;
@@ -118,6 +138,9 @@ public class Estudiante {
 		this.extracurricularActivities = extracurricularActivities;
 		this.bullying = bullying;
 		this.stressLevel = stressLevel;
+		this.consejero = consejero;
+		this.analisis_riesgo = analisis_riesgo;
+		this.recomendaciones = recomendaciones;
 	}
 
 	public Long getIdEstudiante() {
@@ -312,5 +335,29 @@ public class Estudiante {
 		this.stressLevel = stressLevel;
 	}
 
+	public Consejero getConsejero() {
+		return consejero;
+	}
+
+	public void setConsejero(Consejero consejero) {
+		this.consejero = consejero;
+	}
+
+	public Analisis_Riesgo getAnalisis_riesgo() {
+		return analisis_riesgo;
+	}
+
+	public void setAnalisis_riesgo(Analisis_Riesgo analisis_riesgo) {
+		this.analisis_riesgo = analisis_riesgo;
+	}
+
+	public List<Recomendacion> getRecomendaciones() {
+		return recomendaciones;
+	}
+
+	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
+		this.recomendaciones = recomendaciones;
+	}
 	
+    
 }

@@ -5,10 +5,12 @@ import java.util.Date;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "recomendacion")
+@Table(name = "recomendaciones")
 public class Recomendacion {
 	@Id
 	@Column(name="id_recomendacion")
@@ -25,11 +27,30 @@ public class Recomendacion {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Recomendacion(Long id_recomendacion, String descripcion, Date fecha_recomendacion) {
+	// Relación con Estudiante (Muchos a Uno)
+    @ManyToOne
+    @JoinColumn(name = "id_estudiante", referencedColumnName = "id_estudiante")
+    private Estudiante estudiantes;
+
+    // Relación con Consejero (Muchos a Uno)
+    @ManyToOne
+    @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
+    private Consejero consejero;
+
+    // Relación con AnalisisRiesgo (Muchos a Uno)
+    @ManyToOne
+    @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
+    private Analisis_Riesgo analisis_riesgo;
+
+	public Recomendacion(Long id_recomendacion, String descripcion, Date fecha_recomendacion, Estudiante estudiante,
+			Consejero consejero, Analisis_Riesgo analisis_riesgo) {
 		super();
 		this.id_recomendacion = id_recomendacion;
 		this.descripcion = descripcion;
 		this.fecha_recomendacion = fecha_recomendacion;
+		this.estudiantes = estudiante;
+		this.consejero = consejero;
+		this.analisis_riesgo = analisis_riesgo;
 	}
 
 	public Long getId_recomendacion() {
@@ -54,6 +75,30 @@ public class Recomendacion {
 
 	public void setFecha_recomendacion(Date fecha_recomendacion) {
 		this.fecha_recomendacion = fecha_recomendacion;
+	}
+
+	public Estudiante getEstudiante() {
+		return estudiantes;
+	}
+
+	public void setEstudiante(Estudiante estudiante) {
+		this.estudiantes = estudiante;
+	}
+
+	public Consejero getConsejero() {
+		return consejero;
+	}
+
+	public void setConsejero(Consejero consejero) {
+		this.consejero = consejero;
+	}
+
+	public Analisis_Riesgo getAnalisis_riesgo() {
+		return analisis_riesgo;
+	}
+
+	public void setAnalisis_riesgo(Analisis_Riesgo analisis_riesgo) {
+		this.analisis_riesgo = analisis_riesgo;
 	}
 	
 	

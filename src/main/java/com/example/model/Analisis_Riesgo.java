@@ -1,10 +1,13 @@
 package com.example.model;
 
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -23,18 +26,31 @@ public class Analisis_Riesgo {
 	@Column(name="fecha_analisis")
 	private Date fecha_analisis;
 
-	public Analisis_Riesgo() {
+
+	// Relación AnalisisRiesgo -> Estudiante (Uno a Muchos)
+    @OneToMany
+    @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
+    private List<Estudiante> estudiantes;
+
+    // Relación AnalisisRiesgo -> Recomendacion (Uno a Muchos)
+    @OneToMany
+    @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
+    private List<Recomendacion> recomendaciones;
+
+    public Analisis_Riesgo() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
 	public Analisis_Riesgo(Long id_analisis, String segmento_riesgo, String factores_clave_correlacion,
-			Date fecha_analisis) {
+			Date fecha_analisis, List<Estudiante> estudiantes, List<Recomendacion> recomendaciones) {
 		super();
 		this.id_analisis = id_analisis;
 		this.segmento_riesgo = segmento_riesgo;
 		this.factores_clave_correlacion = factores_clave_correlacion;
 		this.fecha_analisis = fecha_analisis;
+		this.estudiantes = estudiantes;
+		this.recomendaciones = recomendaciones;
 	}
 
 	public Long getId_analisis() {
@@ -69,5 +85,20 @@ public class Analisis_Riesgo {
 		this.fecha_analisis = fecha_analisis;
 	}
 
+	public List<Estudiante> getEstudiantes() {
+		return estudiantes;
+	}
+
+	public void setEstudiantes(List<Estudiante> estudiantes) {
+		this.estudiantes = estudiantes;
+	}
+
+	public List<Recomendacion> getRecomendaciones() {
+		return recomendaciones;
+	}
+
+	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
+		this.recomendaciones = recomendaciones;
+	}
 
 }
