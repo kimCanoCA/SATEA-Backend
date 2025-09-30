@@ -1,5 +1,89 @@
-package com.example.controller;
+package com.example.controller; // Asegúrate de que el paquete sea correcto
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.demo.Datos.CorrelationResult;
+import com.example.demo.Datos.Recommendation;
+import com.example.demo.Datos.RiskSegment;
+import com.example.demo.Service.DataService;
+import com.example.demo.Service.RiskAnalysisService;
+
+@RestController
+@RequestMapping("/api/v1")
 public class Estudiante_Controller {
 
+    private final DataService dataService;
+    private final RiskAnalysisService riskAnalysisService;
+
+    // Inyección de dependencias por constructor
+    public Estudiante_Controller(DataService dataService, RiskAnalysisService riskAnalysisService) {
+        this.dataService = dataService;
+        this.riskAnalysisService = riskAnalysisService;
+    }
+
+    // ======================================================================
+    // RIMP3.3: Endpoint de Carga de Archivos
+    // ======================================================================
+    @PostMapping("/data/upload")
+    public ResponseEntity<String> uploadDataFile(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return new ResponseEntity<>("Debe seleccionar un archivo para cargar.", HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            // Llama al servicio para procesar y guardar los datos
+            int savedCount = dataService.processAndSaveStudents(file);
+            return new ResponseEntity<>("Archivo '" + file.getOriginalFilename() + 
+                                        "' procesado exitosamente. Se guardaron " + savedCount + " registros de estudiantes.", 
+                                        HttpStatus.CREATED);
+        } catch (IOException e) {
+            return new ResponseEntity<>("Error al leer el archivo de datos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            // Captura errores de NumberFormatException o base de datos
+            System.err.println("Error al procesar el archivo: " + e.getMessage());
+            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // ======================================================================
+    // Análisis de Riesgo (RF1, RF2, RF3)
+    // ======================================================================
+    
+    // RIMP3.1 & RF2.2: Obtener la segmentación de riesgo
+    @GetMapping("/risk/segmentation")
+    public ResponseEntity<List<RiskSegment>> getRiskSegmentation() {
+        List<RiskSegment> segmentation = riskAnalysisService.getRiskSegmentation();
+        return ResponseEntity.ok(segmentation);
+    }
+    
+    // RIMP3.1 & RF1.2: Obtener el análisis de correlación
+    @GetMapping("/risk/correlations")
+    public ResponseEntity<List<CorrelationResult>> getCorrelations() {
+        List<CorrelationResult> correlations = riskAnalysisService.getCorrelations();
+        return ResponseEntity.ok(correlations);
+    }
+    
+    // RIMP3.1 & RF3.1: Obtener recomendaciones personalizadas
+    @GetMapping("/students/{id}/recommendations")
+    public ResponseEntity<List<Recommendation>> getRecommendations(@PathVariable Long id) {
+        List<Recommendation> recommendations = riskAnalysisService.getPersonalizedRecommendations(id);
+        
+        // Retorna 404 Not Found si el estudiante no existe
+        if (dataService.getEstudianteById(id).isEmpty()) {
+             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        
+        return ResponseEntity.ok(recommendations);
+    }
 }

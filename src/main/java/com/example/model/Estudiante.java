@@ -1,10 +1,10 @@
 package com.example.model;
 
-
 import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -14,96 +14,97 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "estudiantes")
 public class Estudiante {
-	@Id
-	@Column(name = "id_estudiante")
-	private Long idEstudiante;
+    @Id
+    @Column(name = "id_estudiante")
+    private Long idEstudiante;
 
-	@Column(name = "nombre")
-	private String nombre;
+    @Column(name = "nombre")
+    private String nombre;
 
-	@Column(name = "email")
-	private String email;
+    @Column(name = "email")
+    private String email;
 
-	@Column(name = "anxiety_level")
-	private Integer anxietyLevel;
+    @Column(name = "anxiety_level")
+    private Integer anxietyLevel;
 
-	@Column(name = "self_esteem")
-	private Integer selfEsteem;
+    @Column(name = "self_esteem")
+    private Integer selfEsteem;
 
-	@Column(name = "mental_health_history")
-	private Integer mentalHealthHistory;
+    @Column(name = "mental_health_history")
+    private Integer mentalHealthHistory;
 
-	@Column(name = "depression")
-	private Integer depression;
+    @Column(name = "depression")
+    private Integer depression;
 
-	@Column(name = "headache")
-	private Integer headache;
+    @Column(name = "headache")
+    private Integer headache;
 
-	@Column(name = "blood_pressure")
-	private Integer bloodPressure;
+    @Column(name = "blood_pressure")
+    private Integer bloodPressure;
 
-	@Column(name = "sleep_quality")
-	private Integer sleepQuality;
+    @Column(name = "sleep_quality")
+    private Integer sleepQuality;
 
-	@Column(name = "breathing_problem")
-	private Integer breathingProblem;
+    @Column(name = "breathing_problem")
+    private Integer breathingProblem;
 
-	@Column(name = "noise_level")
-	private Integer noiseLevel;
+    @Column(name = "noise_level")
+    private Integer noiseLevel;
 
-	@Column(name = "living_conditions")
-	private Integer livingConditions;
+    @Column(name = "living_conditions")
+    private Integer livingConditions;
 
-	@Column(name = "safety")
-	private Integer safety;
+    @Column(name = "safety")
+    private Integer safety;
 
-	@Column(name = "basic_needs")
-	private Integer basicNeeds;
+    @Column(name = "basic_needs")
+    private Integer basicNeeds;
 
-	@Column(name = "academic_performance")
-	private Integer academicPerformance;
+    @Column(name = "academic_performance")
+    private Integer academicPerformance;
 
-	@Column(name = "study_load")
-	private Integer studyLoad;
+    @Column(name = "study_load")
+    private Integer studyLoad;
 
-	@Column(name = "teacher_student_relationship")
-	private Integer teacherStudentRelationship;
+    @Column(name = "teacher_student_relationship")
+    private Integer teacherStudentRelationship;
 
-	@Column(name = "future_career_concerns")
-	private Integer futureCareerConcerns;
+    @Column(name = "future_career_concerns")
+    private Integer futureCareerConcerns;
 
-	@Column(name = "social_support")
-	private Integer socialSupport;
+    @Column(name = "social_support")
+    private Integer socialSupport;
 
-	@Column(name = "peer_pressure")
-	private Integer peerPressure;
+    @Column(name = "peer_pressure")
+    private Integer peerPressure;
 
-	@Column(name = "extracurricular_activities")
-	private Integer extracurricularActivities;
+    @Column(name = "extracurricular_activities")
+    private Integer extracurricularActivities;
 
-	@Column(name = "bullying")
-	private Integer bullying;
+    @Column(name = "bullying")
+    private Integer bullying;
 
-	@Column(name = "stress_level")
-	private Integer stressLevel;
+    @Column(name = "stress_level")
+    private Integer stressLevel;
 
-	public Estudiante() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-	// Relación con Consejero (Muchos a Uno)
-    @ManyToOne
+    public Estudiante() {
+        // Constructor vacío requerido por JPA
+    }
+
+    // Relación con Consejero (Muchos a Uno)
+    // FetchType.LAZY mejora el rendimiento. optional=true permite NULLs en el campo id_consejero
+    @ManyToOne(fetch = FetchType.LAZY, optional = true) 
     @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
     private Consejero consejero;
 
     // Relación con AnalisisRiesgo (Muchos a Uno)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
     private Analisis_Riesgo analisis_riesgo;
 
     // Relación Estudiante -> Recomendacion (Uno a Muchos)
-    @OneToMany
-    @JoinColumn(name = "id_estudiante", referencedColumnName = "id_estudiante")
+    // 'estudiantes' debe ser el nombre del campo Estudiante en la clase Recomendacion.java
+    @OneToMany(mappedBy = "estudiantes") 
     private List<Recomendacion> recomendaciones;
 
 	public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
@@ -358,6 +359,17 @@ public class Estudiante {
 	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
 		this.recomendaciones = recomendaciones;
 	}
-	
     
+
 }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
