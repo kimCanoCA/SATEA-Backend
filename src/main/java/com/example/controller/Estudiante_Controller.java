@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +21,7 @@ import com.example.demo.Datos.Recommendation;
 import com.example.demo.Datos.RiskSegment;
 import com.example.demo.Service.DataService;
 import com.example.demo.Service.RiskAnalysisService;
+import com.example.model.Estudiante;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -55,7 +59,51 @@ public class Estudiante_Controller {
             return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+ // ======================================================================
+    // 2. CRUD DE ESTUDIANTES (Nuevos Endpoints RIMP3.1)
+    // ======================================================================
 
+    // GET /api/v1/students: Obtener la lista de estudiantes.
+    @GetMapping("/students")
+    public ResponseEntity<List<Estudiante>> getAllStudents() {
+        List<Estudiante> estudiantes = dataService.getAllEstudiantes();
+        return ResponseEntity.ok(estudiantes); 
+    }
+
+    // GET /api/v1/students/{id}: Obtener un estudiante específico.
+    @GetMapping("/students/{id}")
+    public ResponseEntity<Estudiante> getStudentById(@PathVariable Long id) {
+        // Delega la lógica de búsqueda al servicio
+        return dataService.getEstudianteById(id)
+                          .map(ResponseEntity::ok)
+                          .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); 
+    }
+
+    // POST /api/v1/students: Crear un nuevo estudiante.
+    @PostMapping("/students")
+    public ResponseEntity<Estudiante> createStudent(@RequestBody Estudiante estudiante) {
+        Estudiante savedEstudiante = dataService.saveEstudiante(estudiante);
+        return new ResponseEntity<>(savedEstudiante, HttpStatus.CREATED); 
+    }
+
+    // PUT /api/v1/students/{id}: Actualizar un estudiante existente.
+    @PutMapping("/students/{id}")
+    public ResponseEntity<Estudiante> updateStudent(@PathVariable Long id, @RequestBody Estudiante estudianteDetails) {
+        // Delega la lógica de actualización al servicio
+        return dataService.updateEstudiante(id, estudianteDetails)
+                          .map(ResponseEntity::ok)
+                          .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    // DELETE /api/v1/students/{id}: Eliminar un estudiante.
+    @DeleteMapping("/students/{id}")
+    public ResponseEntity<HttpStatus> deleteStudent(@PathVariable Long id) {
+        if (dataService.deleteEstudiante(id)) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204 No Content
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404 Not Found
+        }
+    }
     // ======================================================================
     // Análisis de Riesgo (RF1, RF2, RF3)
     // ======================================================================

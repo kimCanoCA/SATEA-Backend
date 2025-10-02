@@ -83,11 +83,43 @@ public class DataService {
         return estudiantes.size();
     }
 
+
+ // 1. Obtener la lista de estudiantes
+    public List<Estudiante> getAllEstudiantes() {
+        return estudianteRepository.findAll();
+    }
+
+    // 2. Obtener un estudiante por ID
     public Optional<Estudiante> getEstudianteById(Long id) {
         return estudianteRepository.findById(id);
     }
-    
-    public List<Estudiante> getAllEstudiantes() {
-        return estudianteRepository.findAll();
+
+    // 3. Crear (o Guardar) un estudiante
+    public Estudiante saveEstudiante(Estudiante estudiante) {
+        // Aquí podrías añadir lógica de validación antes de guardar
+        return estudianteRepository.save(estudiante);
+    }
+
+    // 4. Actualizar un estudiante
+    @Transactional // Recomendado para operaciones de actualización
+    public Optional<Estudiante> updateEstudiante(Long id, Estudiante estudianteDetails) {
+        return estudianteRepository.findById(id).map(estudianteExistente -> {
+            // Aquí debes copiar los campos que quieres actualizar
+            estudianteExistente.setNombre(estudianteDetails.getNombre());
+            estudianteExistente.setEmail(estudianteDetails.getEmail());
+            estudianteExistente.setAnxietyLevel(estudianteDetails.getAnxietyLevel());
+            // ... (Añade todos los setters relevantes que necesitas actualizar)
+
+            return estudianteRepository.save(estudianteExistente);
+        });
+    }
+
+    // 5. Eliminar un estudiante
+    public boolean deleteEstudiante(Long id) {
+        if (estudianteRepository.existsById(id)) {
+            estudianteRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
