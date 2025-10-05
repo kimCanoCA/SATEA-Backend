@@ -61,6 +61,10 @@ public class RiskAnalysisService {
         }
         
         Estudiante estudiante = estudianteOpt.get();
+        // Obtener la carrera, usando un valor por defecto si es nula.
+        String carrera = estudiante.getCarrera() != null && !estudiante.getCarrera().trim().isEmpty() 
+                         ? estudiante.getCarrera() 
+                         : "tu área de estudio"; 
         
         // Simulación: Genera recomendaciones basadas en los indicadores altos del estudiante.
         if (estudiante.getAnxietyLevel() >= 7 && estudiante.getSleepQuality() <= 4) {
@@ -70,7 +74,10 @@ public class RiskAnalysisService {
             );
         } else if (estudiante.getAcademicPerformance() <= 4 && estudiante.getStudyLoad() >= 7) {
             return Arrays.asList(
-                new Recommendation("Asesoría Académica", "Sesiones uno a uno para optimizar técnicas de estudio.", "Coordinación Académica"),
+                // Recomendación ahora incluye la carrera del estudiante
+                new Recommendation("Asesoría Académica Específica", 
+                                   "Sesiones uno a uno para optimizar técnicas de estudio relevantes para la carrera de " + carrera + ".", 
+                                   "Coordinación Académica"),
                 new Recommendation("Taller de Gestión del Tiempo", "Aprender a priorizar tareas y reducir la carga percibida.", "Servicios Estudiantiles")
             );
         } else {

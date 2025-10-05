@@ -23,6 +23,10 @@ public class Estudiante {
 
     @Column(name = "email")
     private String email;
+    
+    // Nuevo campo para la carrera/programa de estudio
+    @Column(name = "carrera")
+    private String carrera; 
 
     @Column(name = "anxiety_level")
     private Integer anxietyLevel;
@@ -93,7 +97,7 @@ public class Estudiante {
 
     // Relación con Consejero (Muchos a Uno)
     // FetchType.LAZY mejora el rendimiento. optional=true permite NULLs en el campo id_consejero
-    @ManyToOne(fetch = FetchType.LAZY, optional = true) 
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
     private Consejero consejero;
 
@@ -104,10 +108,10 @@ public class Estudiante {
 
     // Relación Estudiante -> Recomendacion (Uno a Muchos)
     // 'estudiantes' debe ser el nombre del campo Estudiante en la clase Recomendacion.java
-    @OneToMany(mappedBy = "estudiantes") 
+    @OneToMany(mappedBy = "estudiantes")
     private List<Recomendacion> recomendaciones;
 
-	public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
+	public Estudiante(Long idEstudiante, String nombre, String email, String carrera, Integer anxietyLevel, Integer selfEsteem,
 			Integer mentalHealthHistory, Integer depression, Integer headache, Integer bloodPressure,
 			Integer sleepQuality, Integer breathingProblem, Integer noiseLevel, Integer livingConditions,
 			Integer safety, Integer basicNeeds, Integer academicPerformance, Integer studyLoad,
@@ -118,6 +122,7 @@ public class Estudiante {
 		this.idEstudiante = idEstudiante;
 		this.nombre = nombre;
 		this.email = email;
+		this.carrera = carrera; // Inicialización de la nueva propiedad
 		this.anxietyLevel = anxietyLevel;
 		this.selfEsteem = selfEsteem;
 		this.mentalHealthHistory = mentalHealthHistory;
@@ -166,6 +171,16 @@ public class Estudiante {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+    
+    // Getter para la nueva propiedad 'carrera'
+	public String getCarrera() {
+		return carrera;
+	}
+
+    // Setter para la nueva propiedad 'carrera'
+	public void setCarrera(String carrera) {
+		this.carrera = carrera;
 	}
 
 	public Integer getAnxietyLevel() {
@@ -359,17 +374,4 @@ public class Estudiante {
 	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
 		this.recomendaciones = recomendaciones;
 	}
-    
-
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
