@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,41 +23,46 @@ import com.example.demo.Datos.RiskSegment;
 import com.example.demo.Service.DataService;
 import com.example.demo.Service.RiskAnalysisService;
 import com.example.model.Estudiante;
+import com.example.demo.Service.CSVService;
+import com.example.demo.repository.Repository_Consejero; 
+import com.example.model.Consejero;
+import org.springframework.security.core.Authentication; 
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/v1")
+@CrossOrigin(origins = "*")
 public class Estudiante_Controller {
 
     private final DataService dataService;
     private final RiskAnalysisService riskAnalysisService;
+    private final CSVService csvService;
+    
+    @Autowired // <-- Usa Autowired para inyectar el repositorio
+    private Repository_Consejero consejeroRepository;
 
     // Inyección de dependencias por constructor
-    public Estudiante_Controller(DataService dataService, RiskAnalysisService riskAnalysisService) {
+    public Estudiante_Controller(DataService dataService, RiskAnalysisService riskAnalysisService,CSVService csvService) {
         this.dataService = dataService;
         this.riskAnalysisService = riskAnalysisService;
+        this.csvService = csvService;
     }
 
     // ======================================================================
     // RIMP3.3: Endpoint de Carga de Archivos
     // ======================================================================
-    @PostMapping("/data/upload")
-    public ResponseEntity<String> uploadDataFile(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/students/upload")
+    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
-            return new ResponseEntity<>("Debe seleccionar un archivo para cargar.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Por favor, seleccione un archivo CSV.", HttpStatus.BAD_REQUEST);
         }
 
         try {
-            // Llama al servicio para procesar y guardar los datos
-            int savedCount = dataService.processAndSaveStudents(file);
-            return new ResponseEntity<>("Archivo '" + file.getOriginalFilename() + 
-                                        "' procesado exitosamente. Se guardaron " + savedCount + " registros de estudiantes.", 
-                                        HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>("Error al leer el archivo de datos: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            List<Estudiante> savedStudents = csvService.processCsvFile(file);
+            return new ResponseEntity<>("Se cargaron y guardaron " + savedStudents.size() + " estudiantes.", HttpStatus.CREATED);
         } catch (Exception e) {
-            // Captura errores de NumberFormatException o base de datos
-            System.err.println("Error al procesar el archivo: " + e.getMessage());
-            return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            // Esto capturará errores de formato en el CSV (ej. texto donde debería ir un número)
+            return new ResponseEntity<>("Error al procesar el archivo CSV: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
  // ======================================================================
@@ -79,13 +85,24 @@ public class Estudiante_Controller {
                           .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); 
     }
 
-    // POST /api/v1/students: Crear un nuevo estudiante.
+ // POST /api/v1/students: Crear un nuevo estudiante.
     @PostMapping("/students")
-    public ResponseEntity<Estudiante> createStudent(@RequestBody Estudiante estudiante) {
-        Estudiante savedEstudiante = dataService.saveEstudiante(estudiante);
-        return new ResponseEntity<>(savedEstudiante, HttpStatus.CREATED); 
-    }
+    public ResponseEntity<Estudiante> createStudent(@RequestBody Estudiante estudiante, Authentication authentication) {
 
+        // 1. Obtiene el email (username) del consejero que ha iniciado sesión desde el token JWT.
+        String userEmail = authentication.getName();
+
+        // 2. Busca la entidad completa del Consejero en la base de datos usando su email.
+        Consejero consejeroLogueado = consejeroRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Consejero no encontrado para el email: " + userEmail));
+
+        // 3. Asigna este consejero al nuevo estudiante que se está creando.
+        estudiante.setConsejero(consejeroLogueado);
+
+        // 4. Guarda el estudiante en la base de datos (ahora con el id_consejero).
+        Estudiante savedEstudiante = dataService.saveEstudiante(estudiante);
+        return new ResponseEntity<>(savedEstudiante, HttpStatus.CREATED);
+    }
     // PUT /api/v1/students/{id}: Actualizar un estudiante existente.
     @PutMapping("/students/{id}")
     public ResponseEntity<Estudiante> updateStudent(@PathVariable Long id, @RequestBody Estudiante estudianteDetails) {

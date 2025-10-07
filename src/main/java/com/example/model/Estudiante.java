@@ -1,22 +1,18 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.List;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "estudiantes")
 public class Estudiante {
+
     @Id
     @Column(name = "id_estudiante")
-    private Long idEstudiante;
+    private Long idEstudiante;  // <-- SIN @GeneratedValue
 
     @Column(name = "nombre")
     private String nombre;
@@ -87,289 +83,274 @@ public class Estudiante {
     @Column(name = "stress_level")
     private Integer stressLevel;
 
-    public Estudiante() {
-        // Constructor vacío requerido por JPA
-    }
-
-    // Relación con Consejero (Muchos a Uno)
-    // FetchType.LAZY mejora el rendimiento. optional=true permite NULLs en el campo id_consejero
-    @ManyToOne(fetch = FetchType.LAZY, optional = true) 
-    @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
+    @ManyToOne
+    @JoinColumn(name = "id_Consejero")
+    @JsonBackReference(value = "consejero-estudiantes")
     private Consejero consejero;
 
-    // Relación con AnalisisRiesgo (Muchos a Uno)
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
     private Analisis_Riesgo analisis_riesgo;
 
-    // Relación Estudiante -> Recomendacion (Uno a Muchos)
-    // 'estudiantes' debe ser el nombre del campo Estudiante en la clase Recomendacion.java
-    @OneToMany(mappedBy = "estudiantes") 
+    @OneToMany(mappedBy = "estudiante")
+    @JsonManagedReference
     private List<Recomendacion> recomendaciones;
 
-	public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
-			Integer mentalHealthHistory, Integer depression, Integer headache, Integer bloodPressure,
-			Integer sleepQuality, Integer breathingProblem, Integer noiseLevel, Integer livingConditions,
-			Integer safety, Integer basicNeeds, Integer academicPerformance, Integer studyLoad,
-			Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
-			Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel,
-			Consejero consejero, Analisis_Riesgo analisis_riesgo, List<Recomendacion> recomendaciones) {
-		super();
-		this.idEstudiante = idEstudiante;
-		this.nombre = nombre;
-		this.email = email;
-		this.anxietyLevel = anxietyLevel;
-		this.selfEsteem = selfEsteem;
-		this.mentalHealthHistory = mentalHealthHistory;
-		this.depression = depression;
-		this.headache = headache;
-		this.bloodPressure = bloodPressure;
-		this.sleepQuality = sleepQuality;
-		this.breathingProblem = breathingProblem;
-		this.noiseLevel = noiseLevel;
-		this.livingConditions = livingConditions;
-		this.safety = safety;
-		this.basicNeeds = basicNeeds;
-		this.academicPerformance = academicPerformance;
-		this.studyLoad = studyLoad;
-		this.teacherStudentRelationship = teacherStudentRelationship;
-		this.futureCareerConcerns = futureCareerConcerns;
-		this.socialSupport = socialSupport;
-		this.peerPressure = peerPressure;
-		this.extracurricularActivities = extracurricularActivities;
-		this.bullying = bullying;
-		this.stressLevel = stressLevel;
-		this.consejero = consejero;
-		this.analisis_riesgo = analisis_riesgo;
-		this.recomendaciones = recomendaciones;
-	}
+    // Constructor vacío
+    public Estudiante() {}
 
-	public Long getIdEstudiante() {
-		return idEstudiante;
-	}
+    // Constructor completo
+    public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
+                      Integer mentalHealthHistory, Integer depression, Integer headache, Integer bloodPressure,
+                      Integer sleepQuality, Integer breathingProblem, Integer noiseLevel, Integer livingConditions,
+                      Integer safety, Integer basicNeeds, Integer academicPerformance, Integer studyLoad,
+                      Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
+                      Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel,
+                      Consejero consejero, Analisis_Riesgo analisis_riesgo, List<Recomendacion> recomendaciones) {
+        this.idEstudiante = idEstudiante;
+        this.nombre = nombre;
+        this.email = email;
+        this.anxietyLevel = anxietyLevel;
+        this.selfEsteem = selfEsteem;
+        this.mentalHealthHistory = mentalHealthHistory;
+        this.depression = depression;
+        this.headache = headache;
+        this.bloodPressure = bloodPressure;
+        this.sleepQuality = sleepQuality;
+        this.breathingProblem = breathingProblem;
+        this.noiseLevel = noiseLevel;
+        this.livingConditions = livingConditions;
+        this.safety = safety;
+        this.basicNeeds = basicNeeds;
+        this.academicPerformance = academicPerformance;
+        this.studyLoad = studyLoad;
+        this.teacherStudentRelationship = teacherStudentRelationship;
+        this.futureCareerConcerns = futureCareerConcerns;
+        this.socialSupport = socialSupport;
+        this.peerPressure = peerPressure;
+        this.extracurricularActivities = extracurricularActivities;
+        this.bullying = bullying;
+        this.stressLevel = stressLevel;
+        this.consejero = consejero;
+        this.analisis_riesgo = analisis_riesgo;
+        this.recomendaciones = recomendaciones;
+    }
 
-	public void setIdEstudiante(Long idEstudiante) {
-		this.idEstudiante = idEstudiante;
-	}
+    // Getters y Setters
+    public Long getIdEstudiante() {
+        return idEstudiante;
+    }
 
-	public String getNombre() {
-		return nombre;
-	}
+    public void setIdEstudiante(Long idEstudiante) {
+        this.idEstudiante = idEstudiante;
+    }
 
-	public void setNombre(String nombre) {
-		this.nombre = nombre;
-	}
+    public String getNombre() {
+        return nombre;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    public String getEmail() {
+        return email;
+    }
 
-	public Integer getAnxietyLevel() {
-		return anxietyLevel;
-	}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public void setAnxietyLevel(Integer anxietyLevel) {
-		this.anxietyLevel = anxietyLevel;
-	}
+    public Integer getAnxietyLevel() {
+        return anxietyLevel;
+    }
 
-	public Integer getSelfEsteem() {
-		return selfEsteem;
-	}
+    public void setAnxietyLevel(Integer anxietyLevel) {
+        this.anxietyLevel = anxietyLevel;
+    }
 
-	public void setSelfEsteem(Integer selfEsteem) {
-		this.selfEsteem = selfEsteem;
-	}
+    public Integer getSelfEsteem() {
+        return selfEsteem;
+    }
 
-	public Integer getMentalHealthHistory() {
-		return mentalHealthHistory;
-	}
+    public void setSelfEsteem(Integer selfEsteem) {
+        this.selfEsteem = selfEsteem;
+    }
 
-	public void setMentalHealthHistory(Integer mentalHealthHistory) {
-		this.mentalHealthHistory = mentalHealthHistory;
-	}
+    public Integer getMentalHealthHistory() {
+        return mentalHealthHistory;
+    }
 
-	public Integer getDepression() {
-		return depression;
-	}
+    public void setMentalHealthHistory(Integer mentalHealthHistory) {
+        this.mentalHealthHistory = mentalHealthHistory;
+    }
 
-	public void setDepression(Integer depression) {
-		this.depression = depression;
-	}
+    public Integer getDepression() {
+        return depression;
+    }
 
-	public Integer getHeadache() {
-		return headache;
-	}
+    public void setDepression(Integer depression) {
+        this.depression = depression;
+    }
 
-	public void setHeadache(Integer headache) {
-		this.headache = headache;
-	}
+    public Integer getHeadache() {
+        return headache;
+    }
 
-	public Integer getBloodPressure() {
-		return bloodPressure;
-	}
+    public void setHeadache(Integer headache) {
+        this.headache = headache;
+    }
 
-	public void setBloodPressure(Integer bloodPressure) {
-		this.bloodPressure = bloodPressure;
-	}
+    public Integer getBloodPressure() {
+        return bloodPressure;
+    }
 
-	public Integer getSleepQuality() {
-		return sleepQuality;
-	}
+    public void setBloodPressure(Integer bloodPressure) {
+        this.bloodPressure = bloodPressure;
+    }
 
-	public void setSleepQuality(Integer sleepQuality) {
-		this.sleepQuality = sleepQuality;
-	}
+    public Integer getSleepQuality() {
+        return sleepQuality;
+    }
 
-	public Integer getBreathingProblem() {
-		return breathingProblem;
-	}
+    public void setSleepQuality(Integer sleepQuality) {
+        this.sleepQuality = sleepQuality;
+    }
 
-	public void setBreathingProblem(Integer breathingProblem) {
-		this.breathingProblem = breathingProblem;
-	}
+    public Integer getBreathingProblem() {
+        return breathingProblem;
+    }
 
-	public Integer getNoiseLevel() {
-		return noiseLevel;
-	}
+    public void setBreathingProblem(Integer breathingProblem) {
+        this.breathingProblem = breathingProblem;
+    }
 
-	public void setNoiseLevel(Integer noiseLevel) {
-		this.noiseLevel = noiseLevel;
-	}
+    public Integer getNoiseLevel() {
+        return noiseLevel;
+    }
 
-	public Integer getLivingConditions() {
-		return livingConditions;
-	}
+    public void setNoiseLevel(Integer noiseLevel) {
+        this.noiseLevel = noiseLevel;
+    }
 
-	public void setLivingConditions(Integer livingConditions) {
-		this.livingConditions = livingConditions;
-	}
+    public Integer getLivingConditions() {
+        return livingConditions;
+    }
 
-	public Integer getSafety() {
-		return safety;
-	}
+    public void setLivingConditions(Integer livingConditions) {
+        this.livingConditions = livingConditions;
+    }
 
-	public void setSafety(Integer safety) {
-		this.safety = safety;
-	}
+    public Integer getSafety() {
+        return safety;
+    }
 
-	public Integer getBasicNeeds() {
-		return basicNeeds;
-	}
+    public void setSafety(Integer safety) {
+        this.safety = safety;
+    }
 
-	public void setBasicNeeds(Integer basicNeeds) {
-		this.basicNeeds = basicNeeds;
-	}
+    public Integer getBasicNeeds() {
+        return basicNeeds;
+    }
 
-	public Integer getAcademicPerformance() {
-		return academicPerformance;
-	}
+    public void setBasicNeeds(Integer basicNeeds) {
+        this.basicNeeds = basicNeeds;
+    }
 
-	public void setAcademicPerformance(Integer academicPerformance) {
-		this.academicPerformance = academicPerformance;
-	}
+    public Integer getAcademicPerformance() {
+        return academicPerformance;
+    }
 
-	public Integer getStudyLoad() {
-		return studyLoad;
-	}
+    public void setAcademicPerformance(Integer academicPerformance) {
+        this.academicPerformance = academicPerformance;
+    }
 
-	public void setStudyLoad(Integer studyLoad) {
-		this.studyLoad = studyLoad;
-	}
+    public Integer getStudyLoad() {
+        return studyLoad;
+    }
 
-	public Integer getTeacherStudentRelationship() {
-		return teacherStudentRelationship;
-	}
+    public void setStudyLoad(Integer studyLoad) {
+        this.studyLoad = studyLoad;
+    }
 
-	public void setTeacherStudentRelationship(Integer teacherStudentRelationship) {
-		this.teacherStudentRelationship = teacherStudentRelationship;
-	}
+    public Integer getTeacherStudentRelationship() {
+        return teacherStudentRelationship;
+    }
 
-	public Integer getFutureCareerConcerns() {
-		return futureCareerConcerns;
-	}
+    public void setTeacherStudentRelationship(Integer teacherStudentRelationship) {
+        this.teacherStudentRelationship = teacherStudentRelationship;
+    }
 
-	public void setFutureCareerConcerns(Integer futureCareerConcerns) {
-		this.futureCareerConcerns = futureCareerConcerns;
-	}
+    public Integer getFutureCareerConcerns() {
+        return futureCareerConcerns;
+    }
 
-	public Integer getSocialSupport() {
-		return socialSupport;
-	}
+    public void setFutureCareerConcerns(Integer futureCareerConcerns) {
+        this.futureCareerConcerns = futureCareerConcerns;
+    }
 
-	public void setSocialSupport(Integer socialSupport) {
-		this.socialSupport = socialSupport;
-	}
+    public Integer getSocialSupport() {
+        return socialSupport;
+    }
 
-	public Integer getPeerPressure() {
-		return peerPressure;
-	}
+    public void setSocialSupport(Integer socialSupport) {
+        this.socialSupport = socialSupport;
+    }
 
-	public void setPeerPressure(Integer peerPressure) {
-		this.peerPressure = peerPressure;
-	}
+    public Integer getPeerPressure() {
+        return peerPressure;
+    }
 
-	public Integer getExtracurricularActivities() {
-		return extracurricularActivities;
-	}
+    public void setPeerPressure(Integer peerPressure) {
+        this.peerPressure = peerPressure;
+    }
 
-	public void setExtracurricularActivities(Integer extracurricularActivities) {
-		this.extracurricularActivities = extracurricularActivities;
-	}
+    public Integer getExtracurricularActivities() {
+        return extracurricularActivities;
+    }
 
-	public Integer getBullying() {
-		return bullying;
-	}
+    public void setExtracurricularActivities(Integer extracurricularActivities) {
+        this.extracurricularActivities = extracurricularActivities;
+    }
 
-	public void setBullying(Integer bullying) {
-		this.bullying = bullying;
-	}
+    public Integer getBullying() {
+        return bullying;
+    }
 
-	public Integer getStressLevel() {
-		return stressLevel;
-	}
+    public void setBullying(Integer bullying) {
+        this.bullying = bullying;
+    }
 
-	public void setStressLevel(Integer stressLevel) {
-		this.stressLevel = stressLevel;
-	}
+    public Integer getStressLevel() {
+        return stressLevel;
+    }
 
-	public Consejero getConsejero() {
-		return consejero;
-	}
+    public void setStressLevel(Integer stressLevel) {
+        this.stressLevel = stressLevel;
+    }
 
-	public void setConsejero(Consejero consejero) {
-		this.consejero = consejero;
-	}
+    public Consejero getConsejero() {
+        return consejero;
+    }
 
-	public Analisis_Riesgo getAnalisis_riesgo() {
-		return analisis_riesgo;
-	}
+    public void setConsejero(Consejero consejero) {
+        this.consejero = consejero;
+    }
 
-	public void setAnalisis_riesgo(Analisis_Riesgo analisis_riesgo) {
-		this.analisis_riesgo = analisis_riesgo;
-	}
+    public Analisis_Riesgo getAnalisis_riesgo() {
+        return analisis_riesgo;
+    }
 
-	public List<Recomendacion> getRecomendaciones() {
-		return recomendaciones;
-	}
+    public void setAnalisis_riesgo(Analisis_Riesgo analisis_riesgo) {
+        this.analisis_riesgo = analisis_riesgo;
+    }
 
-	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
-		this.recomendaciones = recomendaciones;
-	}
-    
+    public List<Recomendacion> getRecomendaciones() {
+        return recomendaciones;
+    }
 
+    public void setRecomendaciones(List<Recomendacion> recomendaciones) {
+        this.recomendaciones = recomendaciones;
+    }
 }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
