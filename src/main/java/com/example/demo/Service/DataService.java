@@ -36,9 +36,10 @@ public class DataService {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",");
+                // Usar -1 para que no descarte campos vacíos al final de la línea.
+                String[] values = line.split(",", -1);
                 
-                // Se espera un total de 25 campos (id, nombre, email, carrera + 21 scores)
+                // Se espera un total de 26 campos (id, nombre, email, edad, carrera + 21 scores)
                 if (values.length >= 26) { 
                     try {
                         Estudiante estudiante = new Estudiante();
@@ -61,8 +62,6 @@ public class DataService {
                         estudiante.setCarrera(values[4].trim());
                         
                         // 5. a 25. Campos Integer (anxiety_level a stress_level) - Índices 5 a 25
-                        // NOTA: Estos campos siguen usando Integer.parseInt directo, 
-                        // lo que puede causar fallos si el CSV contiene valores no numéricos.
                         estudiante.setAnxietyLevel(Integer.parseInt(values[5].trim()));
                         estudiante.setSelfEsteem(Integer.parseInt(values[6].trim()));
                         estudiante.setMentalHealthHistory(Integer.parseInt(values[7].trim()));
@@ -95,7 +94,7 @@ public class DataService {
                         System.err.println("Error de formato numérico o ID no válido en la línea: " + line);
                     }
                 } else {
-                    System.err.println("Error de longitud de línea (esperado 25 campos o más): " + line);
+                    System.err.println("Error de longitud de línea (esperado 26 campos o más): " + line);
                 }
             }
         }
@@ -198,5 +197,17 @@ public class DataService {
             return "MODERADO";
         }
         return "BAJO";
+    }
+    
+    // -------------------------------------------------------------
+    // 7. 🚨 MÉTODO FALTANTE (SOLUCIÓN AL BUG DE CONTEO REAL)
+    // -------------------------------------------------------------
+    /**
+     * Devuelve el número de estudiantes que coinciden con el nivel de riesgo dado.
+     * Este método es usado por RiskAnalysisService para obtener los conteos reales y corregir el bug.
+     */
+    public int countStudentsByRiskLevel(String nivel) {
+        // La implementación se basa en el método countByNivelRiesgo() que debes añadir al Repositorio.
+        return estudianteRepository.countByNivelRiesgo(nivel).intValue();
     }
 }

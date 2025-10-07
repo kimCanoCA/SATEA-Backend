@@ -7,5 +7,5 @@ import com.example.model.Estudiante;
 ;
 
 public interface Repository_Estudiante extends JpaRepository<Estudiante, Long> {
-
+	 Long countByNivelRiesgo(String nivelRiesgo);
 }

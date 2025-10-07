@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.Datos.CorrelationResult;
 import com.example.demo.Datos.Recommendation;
 import com.example.demo.Datos.RiskSegment;
-import com.example.demo.Datos.RiskSummary; // IMPORTACIÓN NECESARIA
+import com.example.demo.Datos.RiskSummary; 
 import com.example.model.Estudiante; 
 
 @Service
@@ -80,12 +80,10 @@ public class RiskAnalysisService {
      * RF2.1: Devuelve un resumen simple de los conteos por segmento de riesgo (para el Dashboard).
      */
     public RiskSummary getRiskSummary() {
-        int totalStudents = dataService.getAllEstudiantes().size();
-        
-        // Simulación de conteos: 15% alto, 35% moderado, 50% bajo
-        int highRiskCount = (int) (totalStudents * 0.15); 
-        int moderateRiskCount = (int) (totalStudents * 0.35);
-        int lowRiskCount = totalStudents - highRiskCount - moderateRiskCount;
+        // 🚨 CORRECCIÓN CLAVE: Dejar de SIMULAR y obtener los conteos REALES
+        int lowRiskCount = dataService.countStudentsByRiskLevel("BAJO"); 
+        int moderateRiskCount = dataService.countStudentsByRiskLevel("MODERADO");
+        int highRiskCount = dataService.countStudentsByRiskLevel("ALTO"); 
 
         return new RiskSummary(lowRiskCount, moderateRiskCount, highRiskCount);
     }
