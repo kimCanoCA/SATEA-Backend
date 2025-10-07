@@ -156,4 +156,15 @@ public class Estudiante_Controller {
         List<CorrelationResult> correlations = riskAnalysisService.getRelevantCorrelations(id); 
         return ResponseEntity.ok(correlations);
     }
+    
+ // 🔹 RIMP3.1 & RF2.3: Obtener lista de estudiantes con nivel de riesgo "Alto"
+    @GetMapping("/risk/high")
+    public ResponseEntity<List<Estudiante>> getHighRiskStudents() {
+        List<Estudiante> highRiskStudents = dataService.getAllEstudiantes()
+            .stream()
+            .filter(est -> "Alto".equalsIgnoreCase(est.getNivelRiesgo()))
+            .toList();
+
+        return ResponseEntity.ok(highRiskStudents);
+    }
 }
