@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 @Table(name = "estudiantes")
 public class Estudiante {
     @Id
+    
     @Column(name = "id_estudiante")
     private Long idEstudiante;
 
@@ -24,71 +25,78 @@ public class Estudiante {
     @Column(name = "email")
     private String email;
     
-    // Nuevo campo para la carrera/programa de estudio
     @Column(name = "carrera")
     private String carrera; 
 
-    @Column(name = "anxiety_level")
+    // 🚨 CAMPO AGREGADO 1: Edad
+    @Column(name = "edad") 
+    private Integer edad;
+
+    // 🚨 CAMPO AGREGADO 2: Nivel de Riesgo
+    @Column(name = "nivel_riesgo") 
+    private String nivelRiesgo;
+
+    @Column(name = "anxiety_level", columnDefinition = "SMALLINT")
     private Integer anxietyLevel;
 
-    @Column(name = "self_esteem")
+    @Column(name = "self_esteem", columnDefinition = "SMALLINT")
     private Integer selfEsteem;
 
-    @Column(name = "mental_health_history")
+    @Column(name = "mental_health_history", columnDefinition = "SMALLINT")
     private Integer mentalHealthHistory;
 
-    @Column(name = "depression")
+    @Column(name = "depression", columnDefinition = "SMALLINT")
     private Integer depression;
 
-    @Column(name = "headache")
+    @Column(name = "headache", columnDefinition = "SMALLINT")
     private Integer headache;
 
-    @Column(name = "blood_pressure")
+    @Column(name = "blood_pressure", columnDefinition = "SMALLINT")
     private Integer bloodPressure;
 
-    @Column(name = "sleep_quality")
+    @Column(name = "sleep_quality", columnDefinition = "SMALLINT")
     private Integer sleepQuality;
 
-    @Column(name = "breathing_problem")
+    @Column(name = "breathing_problem", columnDefinition = "SMALLINT")
     private Integer breathingProblem;
 
-    @Column(name = "noise_level")
+    @Column(name = "noise_level", columnDefinition = "SMALLINT")
     private Integer noiseLevel;
 
-    @Column(name = "living_conditions")
+    @Column(name = "living_conditions", columnDefinition = "SMALLINT")
     private Integer livingConditions;
 
-    @Column(name = "safety")
+    @Column(name = "safety", columnDefinition = "SMALLINT")
     private Integer safety;
 
-    @Column(name = "basic_needs")
+    @Column(name = "basic_needs", columnDefinition = "SMALLINT")
     private Integer basicNeeds;
 
-    @Column(name = "academic_performance")
+    @Column(name = "academic_performance", columnDefinition = "SMALLINT")
     private Integer academicPerformance;
 
-    @Column(name = "study_load")
+    @Column(name = "study_load", columnDefinition = "SMALLINT")
     private Integer studyLoad;
 
-    @Column(name = "teacher_student_relationship")
+    @Column(name = "teacher_student_relationship", columnDefinition = "SMALLINT")
     private Integer teacherStudentRelationship;
 
-    @Column(name = "future_career_concerns")
+    @Column(name = "future_career_concerns", columnDefinition = "SMALLINT")
     private Integer futureCareerConcerns;
 
-    @Column(name = "social_support")
+    @Column(name = "social_support", columnDefinition = "SMALLINT")
     private Integer socialSupport;
 
-    @Column(name = "peer_pressure")
+    @Column(name = "peer_pressure", columnDefinition = "SMALLINT")
     private Integer peerPressure;
 
-    @Column(name = "extracurricular_activities")
+    @Column(name = "extracurricular_activities", columnDefinition = "SMALLINT")
     private Integer extracurricularActivities;
 
-    @Column(name = "bullying")
+    @Column(name = "bullying", columnDefinition = "SMALLINT")
     private Integer bullying;
 
-    @Column(name = "stress_level")
+    @Column(name = "stress_level", columnDefinition = "SMALLINT")
     private Integer stressLevel;
 
     public Estudiante() {
@@ -96,7 +104,6 @@ public class Estudiante {
     }
 
     // Relación con Consejero (Muchos a Uno)
-    // FetchType.LAZY mejora el rendimiento. optional=true permite NULLs en el campo id_consejero
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "id_consejero", referencedColumnName = "id_consejero")
     private Consejero consejero;
@@ -107,22 +114,23 @@ public class Estudiante {
     private Analisis_Riesgo analisis_riesgo;
 
     // Relación Estudiante -> Recomendacion (Uno a Muchos)
-    // 'estudiantes' debe ser el nombre del campo Estudiante en la clase Recomendacion.java
     @OneToMany(mappedBy = "estudiantes")
     private List<Recomendacion> recomendaciones;
 
-	public Estudiante(Long idEstudiante, String nombre, String email, String carrera, Integer anxietyLevel, Integer selfEsteem,
-			Integer mentalHealthHistory, Integer depression, Integer headache, Integer bloodPressure,
-			Integer sleepQuality, Integer breathingProblem, Integer noiseLevel, Integer livingConditions,
-			Integer safety, Integer basicNeeds, Integer academicPerformance, Integer studyLoad,
-			Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
+	public Estudiante(Long idEstudiante, String nombre, String email, String carrera, Integer edad, String nivelRiesgo,
+			Integer anxietyLevel, Integer selfEsteem, Integer mentalHealthHistory, Integer depression, Integer headache,
+			Integer bloodPressure, Integer sleepQuality, Integer breathingProblem, Integer noiseLevel,
+			Integer livingConditions, Integer safety, Integer basicNeeds, Integer academicPerformance,
+			Integer studyLoad, Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
 			Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel,
 			Consejero consejero, Analisis_Riesgo analisis_riesgo, List<Recomendacion> recomendaciones) {
 		super();
 		this.idEstudiante = idEstudiante;
 		this.nombre = nombre;
 		this.email = email;
-		this.carrera = carrera; // Inicialización de la nueva propiedad
+		this.carrera = carrera;
+		this.edad = edad;
+		this.nivelRiesgo = nivelRiesgo;
 		this.anxietyLevel = anxietyLevel;
 		this.selfEsteem = selfEsteem;
 		this.mentalHealthHistory = mentalHealthHistory;
@@ -172,15 +180,29 @@ public class Estudiante {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-    
-    // Getter para la nueva propiedad 'carrera'
+
 	public String getCarrera() {
 		return carrera;
 	}
 
-    // Setter para la nueva propiedad 'carrera'
 	public void setCarrera(String carrera) {
 		this.carrera = carrera;
+	}
+
+	public Integer getEdad() {
+		return edad;
+	}
+
+	public void setEdad(Integer edad) {
+		this.edad = edad;
+	}
+
+	public String getNivelRiesgo() {
+		return nivelRiesgo;
+	}
+
+	public void setNivelRiesgo(String nivelRiesgo) {
+		this.nivelRiesgo = nivelRiesgo;
 	}
 
 	public Integer getAnxietyLevel() {
@@ -374,4 +396,5 @@ public class Estudiante {
 	public void setRecomendaciones(List<Recomendacion> recomendaciones) {
 		this.recomendaciones = recomendaciones;
 	}
+    
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.model.Estudiante;
 import com.example.demo.repository.Repository_Estudiante;
+import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -23,9 +24,9 @@ public class DataService {
         this.estudianteRepository = estudianteRepository;
     }
 
-    /**
-     * RIMP3.3: Procesa un archivo CSV y guarda los registros de Estudiante.
-     */
+    // -------------------------------------------------------------
+    // RIMP3.3: Procesa archivo CSV (Añadida Lógica de Riesgo)
+    // -------------------------------------------------------------
     @Transactional
     public int processAndSaveStudents(MultipartFile file) throws IOException {
         List<Estudiante> estudiantes = new ArrayList<>();
@@ -37,8 +38,8 @@ public class DataService {
             while ((line = reader.readLine()) != null) {
                 String[] values = line.split(",");
                 
-                // Se espera un total de 25 campos (incluyendo el nuevo campo 'carrera')
-                if (values.length >= 25) { 
+                // Se espera un total de 25 campos (id, nombre, email, carrera + 21 scores)
+                if (values.length >= 26) { 
                     try {
                         Estudiante estudiante = new Estudiante();
                         // 1. id_estudiante (Long)
@@ -48,32 +49,46 @@ public class DataService {
                         // 3. email (String)
                         estudiante.setEmail(values[2].trim());
                         
-                        // 4. carrera (String) - NUEVO CAMPO en el índice 3
-                        estudiante.setCarrera(values[3].trim());
+                        // 🚨 CAMPO EDAD INSERTADO (Índice 3)
+                        try {
+                            estudiante.setEdad(Integer.parseInt(values[3].trim())); 
+                        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                            // Manejo de error local para Edad. Asigna null si falla.
+                            estudiante.setEdad(null); 
+                        }
+                        
+                        // 4. carrera (String) - ÍNDICE CORREGIDO a 4
+                        estudiante.setCarrera(values[4].trim());
+                        
+                        // 5. a 25. Campos Integer (anxiety_level a stress_level) - Índices 5 a 25
+                        // NOTA: Estos campos siguen usando Integer.parseInt directo, 
+                        // lo que puede causar fallos si el CSV contiene valores no numéricos.
+                        estudiante.setAnxietyLevel(Integer.parseInt(values[5].trim()));
+                        estudiante.setSelfEsteem(Integer.parseInt(values[6].trim()));
+                        estudiante.setMentalHealthHistory(Integer.parseInt(values[7].trim()));
+                        estudiante.setDepression(Integer.parseInt(values[8].trim()));
+                        estudiante.setHeadache(Integer.parseInt(values[9].trim()));
+                        estudiante.setBloodPressure(Integer.parseInt(values[10].trim()));
+                        estudiante.setSleepQuality(Integer.parseInt(values[11].trim()));
+                        estudiante.setBreathingProblem(Integer.parseInt(values[12].trim()));
+                        estudiante.setNoiseLevel(Integer.parseInt(values[13].trim()));
+                        estudiante.setLivingConditions(Integer.parseInt(values[14].trim()));
+                        estudiante.setSafety(Integer.parseInt(values[15].trim()));
+                        estudiante.setBasicNeeds(Integer.parseInt(values[16].trim()));
+                        estudiante.setAcademicPerformance(Integer.parseInt(values[17].trim()));
+                        estudiante.setStudyLoad(Integer.parseInt(values[18].trim()));
+                        estudiante.setTeacherStudentRelationship(Integer.parseInt(values[19].trim()));
+                        estudiante.setFutureCareerConcerns(Integer.parseInt(values[20].trim()));
+                        estudiante.setSocialSupport(Integer.parseInt(values[21].trim()));
+                        estudiante.setPeerPressure(Integer.parseInt(values[22].trim()));
+                        estudiante.setExtracurricularActivities(Integer.parseInt(values[23].trim()));
+                        estudiante.setBullying(Integer.parseInt(values[24].trim()));
+                        estudiante.setStressLevel(Integer.parseInt(values[25].trim())); // Último índice (25)
 
-                        // 5. a 25. Campos Integer (anxiety_level a stress_level) - Índices 4 a 24
-                        estudiante.setAnxietyLevel(Integer.parseInt(values[4].trim()));
-                        estudiante.setSelfEsteem(Integer.parseInt(values[5].trim()));
-                        estudiante.setMentalHealthHistory(Integer.parseInt(values[6].trim()));
-                        estudiante.setDepression(Integer.parseInt(values[7].trim()));
-                        estudiante.setHeadache(Integer.parseInt(values[8].trim()));
-                        estudiante.setBloodPressure(Integer.parseInt(values[9].trim()));
-                        estudiante.setSleepQuality(Integer.parseInt(values[10].trim()));
-                        estudiante.setBreathingProblem(Integer.parseInt(values[11].trim()));
-                        estudiante.setNoiseLevel(Integer.parseInt(values[12].trim()));
-                        estudiante.setLivingConditions(Integer.parseInt(values[13].trim()));
-                        estudiante.setSafety(Integer.parseInt(values[14].trim()));
-                        estudiante.setBasicNeeds(Integer.parseInt(values[15].trim()));
-                        estudiante.setAcademicPerformance(Integer.parseInt(values[16].trim()));
-                        estudiante.setStudyLoad(Integer.parseInt(values[17].trim()));
-                        estudiante.setTeacherStudentRelationship(Integer.parseInt(values[18].trim()));
-                        estudiante.setFutureCareerConcerns(Integer.parseInt(values[19].trim()));
-                        estudiante.setSocialSupport(Integer.parseInt(values[20].trim()));
-                        estudiante.setPeerPressure(Integer.parseInt(values[21].trim()));
-                        estudiante.setExtracurricularActivities(Integer.parseInt(values[22].trim()));
-                        estudiante.setBullying(Integer.parseInt(values[23].trim()));
-                        estudiante.setStressLevel(Integer.parseInt(values[24].trim())); // Último índice (24)
 
+                        // 🚨 Calcular riesgo para el estudiante importado
+                        estudiante.setNivelRiesgo(calcularNivelRiesgo(estudiante));
+                        
                         estudiantes.add(estudiante);
 
                     } catch (NumberFormatException e) {
@@ -90,7 +105,7 @@ public class DataService {
     }
 
 
- // 1. Obtener la lista de estudiantes
+    // 1. Obtener la lista de estudiantes
     public List<Estudiante> getAllEstudiantes() {
         return estudianteRepository.findAll();
     }
@@ -100,24 +115,31 @@ public class DataService {
         return estudianteRepository.findById(id);
     }
 
-    // 3. Crear (o Guardar) un estudiante
+    // -------------------------------------------------------------
+    // 3. Crear (o Guardar) un estudiante (Añadida Lógica de Riesgo)
+    // -------------------------------------------------------------
     public Estudiante saveEstudiante(Estudiante estudiante) {
-        // Aquí podrías añadir lógica de validación antes de guardar
+        // 🚨 PASO CLAVE: Calcular el riesgo ANTES de llamar al repositorio
+        String riesgoCalculado = calcularNivelRiesgo(estudiante);
+        estudiante.setNivelRiesgo(riesgoCalculado);
+        
         return estudianteRepository.save(estudiante);
     }
 
-    // 4. Actualizar un estudiante
-    @Transactional // Recomendado para operaciones de actualización
+    // -------------------------------------------------------------
+    // 4. Actualizar un estudiante (Añadida Lógica de Riesgo y Edad)
+    // -------------------------------------------------------------
+    @Transactional 
     public Optional<Estudiante> updateEstudiante(Long id, Estudiante estudianteDetails) {
         return estudianteRepository.findById(id).map(estudianteExistente -> {
-            // Aquí debes copiar los campos que quieres actualizar
+            // Actualizar campos básicos
             estudianteExistente.setNombre(estudianteDetails.getNombre());
             estudianteExistente.setEmail(estudianteDetails.getEmail());
-            // Se añade la actualización para la carrera
-            estudianteExistente.setCarrera(estudianteDetails.getCarrera()); 
+            estudianteExistente.setCarrera(estudianteDetails.getCarrera());
+            estudianteExistente.setEdad(estudianteDetails.getEdad()); // 🚨 Campo Edad
+
+            // Actualizar todos los scores
             estudianteExistente.setAnxietyLevel(estudianteDetails.getAnxietyLevel());
-            
-            // Si es necesario, añade aquí todos los demás setters que se requieran actualizar
             estudianteExistente.setSelfEsteem(estudianteDetails.getSelfEsteem());
             estudianteExistente.setMentalHealthHistory(estudianteDetails.getMentalHealthHistory());
             estudianteExistente.setDepression(estudianteDetails.getDepression());
@@ -139,6 +161,10 @@ public class DataService {
             estudianteExistente.setBullying(estudianteDetails.getBullying());
             estudianteExistente.setStressLevel(estudianteDetails.getStressLevel());
 
+            // 🚨 Volver a calcular el riesgo con los datos actualizados
+            String riesgoCalculado = calcularNivelRiesgo(estudianteExistente); 
+            estudianteExistente.setNivelRiesgo(riesgoCalculado);
+            
             return estudianteRepository.save(estudianteExistente);
         });
     }
@@ -150,5 +176,27 @@ public class DataService {
             return true;
         }
         return false;
+    }
+
+    // -------------------------------------------------------------
+    // 6. Método: Lógica de Cálculo de Riesgo
+    // -------------------------------------------------------------
+    private String calcularNivelRiesgo(Estudiante estudiante) {
+        // Lógica de cálculo: Suma de indicadores clave (AJÚSTALA a tus reglas)
+        int sumScores = 0;
+        
+        // Sumamos los scores de Ansiedad, Depresión y Estrés.
+        sumScores += Optional.ofNullable(estudiante.getAnxietyLevel()).orElse(0);
+        sumScores += Optional.ofNullable(estudiante.getDepression()).orElse(0);
+        sumScores += Optional.ofNullable(estudiante.getStressLevel()).orElse(0);
+        
+        // Asumiendo que el score máximo total es 30 (3 indicadores * 10 puntos)
+        if (sumScores >= 25) {
+            return "ALTO";
+        }
+        if (sumScores >= 15) {
+            return "MODERADO";
+        }
+        return "BAJO";
     }
 }

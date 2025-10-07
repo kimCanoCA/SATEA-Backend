@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.Datos.CorrelationResult;
 import com.example.demo.Datos.Recommendation;
 import com.example.demo.Datos.RiskSegment;
+import com.example.demo.Datos.RiskSummary; // IMPORTACIÓN NECESARIA para el nuevo endpoint
 import com.example.demo.Service.DataService;
 import com.example.demo.Service.RiskAnalysisService;
 import com.example.model.Estudiante;
@@ -59,7 +61,7 @@ public class Estudiante_Controller {
             return new ResponseEntity<>("Error al procesar el archivo: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
- // ======================================================================
+    // ======================================================================
     // 2. CRUD DE ESTUDIANTES (Nuevos Endpoints RIMP3.1)
     // ======================================================================
 
@@ -108,18 +110,18 @@ public class Estudiante_Controller {
     // Análisis de Riesgo (RF1, RF2, RF3)
     // ======================================================================
     
+    // RIMP3.1 & RF2.1: Obtener el resumen de riesgo para el Dashboard (¡NUEVO!)
+    @GetMapping("/risk/summary")
+    public ResponseEntity<RiskSummary> getRiskSummary() {
+        RiskSummary summary = riskAnalysisService.getRiskSummary();
+        return ResponseEntity.ok(summary);
+    }
+    
     // RIMP3.1 & RF2.2: Obtener la segmentación de riesgo
     @GetMapping("/risk/segmentation")
     public ResponseEntity<List<RiskSegment>> getRiskSegmentation() {
         List<RiskSegment> segmentation = riskAnalysisService.getRiskSegmentation();
         return ResponseEntity.ok(segmentation);
-    }
-    
-    // RIMP3.1 & RF1.2: Obtener el análisis de correlación
-    @GetMapping("/risk/correlations")
-    public ResponseEntity<List<CorrelationResult>> getCorrelations() {
-        List<CorrelationResult> correlations = riskAnalysisService.getCorrelations();
-        return ResponseEntity.ok(correlations);
     }
     
     // RIMP3.1 & RF3.1: Obtener recomendaciones personalizadas
@@ -133,5 +135,25 @@ public class Estudiante_Controller {
         }
         
         return ResponseEntity.ok(recommendations);
+    }
+    
+    // RIMP3.1 & RF1.2: Obtener el análisis de correlación (Modelo General - se mantiene)
+    @GetMapping("/risk/correlations")
+    public ResponseEntity<List<CorrelationResult>> getCorrelations() {
+        List<CorrelationResult> correlations = riskAnalysisService.getCorrelations();
+        return ResponseEntity.ok(correlations);
+    }
+    
+    // 🚨 NUEVO ENDPOINT: Obtener las correlaciones personalizadas
+    @GetMapping("/students/{id}/correlations") 
+    public ResponseEntity<List<CorrelationResult>> getStudentCorrelations(@PathVariable Long id) {
+        // Retorna 404 Not Found si el estudiante no existe
+        if (dataService.getEstudianteById(id).isEmpty()) {
+             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        
+        // Llama al nuevo método que filtra por estudiante
+        List<CorrelationResult> correlations = riskAnalysisService.getRelevantCorrelations(id); 
+        return ResponseEntity.ok(correlations);
     }
 }

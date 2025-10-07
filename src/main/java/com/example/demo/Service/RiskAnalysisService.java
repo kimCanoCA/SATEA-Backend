@@ -1,5 +1,6 @@
 package com.example.demo.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,8 @@ import org.springframework.stereotype.Service;
 import com.example.demo.Datos.CorrelationResult;
 import com.example.demo.Datos.Recommendation;
 import com.example.demo.Datos.RiskSegment;
-import com.example.model.Estudiante;
+import com.example.demo.Datos.RiskSummary; // IMPORTACIÓN NECESARIA
+import com.example.model.Estudiante; 
 
 @Service
 public class RiskAnalysisService {
@@ -19,8 +21,12 @@ public class RiskAnalysisService {
         this.dataService = dataService;
     }
 
+    // ======================================================================
+    // RF1: Correlaciones y Factores de Riesgo
+    // ======================================================================
+    
     /**
-     * RF1.1 & RF1.2: Analiza y devuelve las correlaciones de factores de estrés (Simulado).
+     * RF1.1 & RF1.2: Analiza y devuelve las correlaciones de factores de estrés (Simulado - Modelo General).
      */
     public List<CorrelationResult> getCorrelations() {
         // Lógica simulada: Se implementa aquí el análisis de correlación (e.g., Pearson).
@@ -32,27 +38,78 @@ public class RiskAnalysisService {
     }
 
     /**
-     * RF2.1 & RF2.2: Segmenta a los estudiantes en grupos de riesgo (Simulado).
+     * RF1.2: Obtiene las correlaciones relevantes para un estudiante específico.
      */
-    public List<RiskSegment> getRiskSegmentation() {
+    public List<CorrelationResult> getRelevantCorrelations(Long idEstudiante) {
+        Optional<Estudiante> estudianteOpt = dataService.getEstudianteById(idEstudiante);
+        if (estudianteOpt.isEmpty()) {
+            return List.of();
+        }
+        Estudiante estudiante = estudianteOpt.get();
+
+        List<CorrelationResult> allCorrelations = getCorrelations();
+        List<CorrelationResult> relevantCorrelations = new ArrayList<>();
+        
+        for (CorrelationResult corr : allCorrelations) {
+            String factor1 = corr.getFactor1();
+
+            // Regla 1: Carga de estudio vs. Calidad del sueño
+            if (factor1.equals("study_load") && estudiante.getStudyLoad() > 7) {
+                relevantCorrelations.add(corr);
+            }
+            
+            // Regla 2: Nivel de ansiedad vs. Dolores de cabeza
+            if (factor1.equals("anxiety_level") && estudiante.getAnxietyLevel() > 7) {
+                relevantCorrelations.add(corr);
+            }
+            
+            // Regla 3: Soporte social vs. Depresión
+            if (factor1.equals("social_support") && 
+                (estudiante.getDepression() > 7 || estudiante.getSocialSupport() < 4)) {
+                relevantCorrelations.add(corr);
+            }
+        }
+        return relevantCorrelations;
+    }
+
+    // ======================================================================
+    // RF2: Segmentación y Resumen de Riesgo (Dashboard)
+    // ======================================================================
+
+    /**
+     * RF2.1: Devuelve un resumen simple de los conteos por segmento de riesgo (para el Dashboard).
+     */
+    public RiskSummary getRiskSummary() {
         int totalStudents = dataService.getAllEstudiantes().size();
         
-        // Simulación de conteos basada en porcentajes (ej. 15% alto, 35% moderado, 50% bajo)
+        // Simulación de conteos: 15% alto, 35% moderado, 50% bajo
         int highRiskCount = (int) (totalStudents * 0.15); 
         int moderateRiskCount = (int) (totalStudents * 0.35);
         int lowRiskCount = totalStudents - highRiskCount - moderateRiskCount;
 
+        return new RiskSummary(lowRiskCount, moderateRiskCount, highRiskCount);
+    }
 
+    /**
+     * RF2.1 & RF2.2: Segmenta a los estudiantes en grupos de riesgo.
+     * Refactorizado para usar getRiskSummary().
+     */
+    public List<RiskSegment> getRiskSegmentation() {
+        RiskSummary summary = getRiskSummary(); 
+        
         return Arrays.asList(
-                // ¡AHORA SE PASAN LOS 4 ARGUMENTOS AL CONSTRUCTOR!
-                new RiskSegment("Alto Riesgo", highRiskCount, "Puntaje de estrés severo. Requiere intervención inmediata.", Arrays.asList("stress_level", "depression", "study_load")),
-                new RiskSegment("Riesgo Moderado", moderateRiskCount, "Puntaje de estrés entre 5 y 8. Monitoreo y apoyo proactivo.", Arrays.asList("anxiety_level", "peer_pressure")),
-                new RiskSegment("Bajo Riesgo", lowRiskCount, "Puntaje de estrés bajo. Monitoreo rutinario.", Arrays.asList("social_support")) // Se añade un factor de ejemplo para el segmento bajo
+                new RiskSegment("Alto Riesgo", summary.getHighRiskCount(), "Puntaje de estrés severo. Requiere intervención inmediata.", Arrays.asList("stress_level", "depression", "study_load")),
+                new RiskSegment("Riesgo Moderado", summary.getModerateRiskCount(), "Puntaje de estrés entre 5 y 8. Monitoreo y apoyo proactivo.", Arrays.asList("anxiety_level", "peer_pressure")),
+                new RiskSegment("Bajo Riesgo", summary.getLowRiskCount(), "Puntaje de estrés bajo. Monitoreo rutinario.", Arrays.asList("social_support"))
             );
         }
 
+    // ======================================================================
+    // RF3: Recomendaciones Personalizadas
+    // ======================================================================
+
     /**
-     * RF3.1 & RF3.2: Genera recomendaciones personalizadas para un estudiante (Simulado).
+     * RF3.1 & RF3.2: Genera recomendaciones personalizadas para un estudiante (Descripciones DETALLADAS).
      */
     public List<Recommendation> getPersonalizedRecommendations(Long idEstudiante) {
         Optional<Estudiante> estudianteOpt = dataService.getEstudianteById(idEstudiante);
@@ -61,29 +118,90 @@ public class RiskAnalysisService {
         }
         
         Estudiante estudiante = estudianteOpt.get();
-        // Obtener la carrera, usando un valor por defecto si es nula.
         String carrera = estudiante.getCarrera() != null && !estudiante.getCarrera().trim().isEmpty() 
                          ? estudiante.getCarrera() 
                          : "tu área de estudio"; 
         
-        // Simulación: Genera recomendaciones basadas en los indicadores altos del estudiante.
-        if (estudiante.getAnxietyLevel() >= 7 && estudiante.getSleepQuality() <= 4) {
-            return Arrays.asList(
-                new Recommendation("Taller de Manejo de la Ansiedad", "Sesiones grupales para aprender técnicas de relajación.", "Psicólogo Universitario"),
-                new Recommendation("Consejos para la Higiene del Sueño", "Revisar los hábitos de sueño y horarios.", "Centro de Bienestar")
-            );
-        } else if (estudiante.getAcademicPerformance() <= 4 && estudiante.getStudyLoad() >= 7) {
-            return Arrays.asList(
-                // Recomendación ahora incluye la carrera del estudiante
-                new Recommendation("Asesoría Académica Específica", 
-                                   "Sesiones uno a uno para optimizar técnicas de estudio relevantes para la carrera de " + carrera + ".", 
-                                   "Coordinación Académica"),
-                new Recommendation("Taller de Gestión del Tiempo", "Aprender a priorizar tareas y reducir la carga percibida.", "Servicios Estudiantiles")
-            );
-        } else {
-            return Arrays.asList(
-                new Recommendation("Revisión de Bienestar General", "Agenda una cita para una revisión completa de salud mental.", "Centro de Bienestar")
-            );
+        List<Recommendation> recommendations = new ArrayList<>();
+
+        // -- 1. SALUD MENTAL y BIENESTAR --
+        // Ansiedad y Depresión (Riesgo Alto)
+        if (estudiante.getAnxietyLevel() >= 7 || estudiante.getDepression() >= 7) {
+            recommendations.add(new Recommendation(
+                "Terapia Psicológica Individual Inmediata",
+                "**Seguimiento de Crisis:** Se requiere iniciar sesiones individuales urgentes con un psicólogo clínico. La terapia se enfocará en el desarrollo de **habilidades de afrontamiento** y en técnicas específicas para el manejo de los **síntomas agudos de ansiedad y/o depresión**.",
+                "Psicólogo Clínico Universitario"
+            ));
         }
+
+        // Calidad del Sueño baja y Estrés moderado (Riesgo Moderado)
+        if (estudiante.getSleepQuality() <= 4 && estudiante.getStressLevel() >= 5) {
+            recommendations.add(new Recommendation(
+                "Taller Avanzado de Higiene del Sueño",
+                "Participación en un taller especializado que revisa los **hábitos pre-sueño**, optimización del **entorno de descanso** (especialmente si el ruido es alto), y estrategias de **relajación profunda** para facilitar un sueño reparador y continuo.",
+                "Centro de Bienestar"
+            ));
+        }
+        
+        // -- 2. ACADÉMICO y CARGA --
+        // Bajo Rendimiento y Carga Alta (Riesgo Alto)
+        if (estudiante.getAcademicPerformance() <= 4 && estudiante.getStudyLoad() >= 7) {
+            recommendations.add(new Recommendation(
+                "Asesoría Académica Personalizada (Programa de Alto Impacto)",
+                "Sesión intensiva para la optimización de **técnicas de estudio** específicas para la carrera de **" + carrera + "**, **planificación estratégica de la carga** y desarrollo de un **horario de estudio sostenible** que maximice resultados y reduzca el agotamiento.",
+                "Coordinación Académica/Tutoría"
+            ));
+        }
+
+        // Preocupaciones de Carrera/Futuro (Riesgo Moderado)
+        if (estudiante.getFutureCareerConcerns() >= 6) {
+            recommendations.add(new Recommendation(
+                "Coaching Vocacional y Laboral",
+                "Un programa estructurado de 4 semanas para explorar **opciones de carrera**, **reducir la incertidumbre** sobre el futuro profesional y conectar al estudiante con **recursos de prácticas y orientación** en su campo de interés.",
+                "Servicios de Orientación"
+            ));
+        }
+        
+        // -- 3. FACTORES SOCIALES y BÁSICOS --
+        // Bajo Soporte Social o Bullying (Riesgo Alto)
+        if (estudiante.getSocialSupport() <= 4 || estudiante.getPeerPressure() >= 7 || estudiante.getBullying() >= 5) {
+            recommendations.add(new Recommendation(
+                "Programa de Integración y Tutoría de Pares",
+                "Asignación a un **grupo de apoyo social** supervisado por Trabajo Social Universitario y emparejamiento con un **tutor senior** para fomentar la conexión, la seguridad y la construcción de una **red de soporte** efectiva.",
+                "Trabajo Social Universitario"
+            ));
+            if (estudiante.getBullying() >= 5) {
+                 recommendations.add(new Recommendation(
+                    "Activación de Protocolo Anti-Acoso (Acción Legal)",
+                    "**Seguimiento confidencial de la denuncia.** Se proveerá **asesoría legal** y acompañamiento para la aplicación inmediata del **protocolo institucional de prevención y sanción** contra el acoso escolar (bullying), priorizando la seguridad del estudiante.",
+                    "Departamento Legal/Decanato"
+                ));
+            }
+        }
+
+        // Necesidades Básicas Comprometidas (Riesgo CRÍTICO)
+        if (estudiante.getBasicNeeds() <= 4 || estudiante.getLivingConditions() <= 4 || estudiante.getSafety() <= 4) {
+             recommendations.add(new Recommendation(
+                "Asistencia de Emergencia (Ayudas Socioeconómicas)",
+                "**Evaluación inmediata** de elegibilidad para becas de subsistencia, **ayuda alimentaria de emergencia** y/o reubicación temporal en **alojamiento seguro** si las condiciones de vivienda o seguridad representan un riesgo crítico.",
+                "Departamento de Ayudas Financieras"
+            ));
+        }
+        
+        // -- 4. RECOMENDACIÓN PROACTIVA / POR DEFECTO --
+        if (recommendations.isEmpty()) {
+            recommendations.add(new Recommendation(
+                "Chequeo de Bienestar y Hábitos (Enfoque Preventivo)",
+                "Dado el bajo perfil de riesgo, se recomienda una **consulta preventiva** para revisar hábitos de estudio, nutrición y actividad física, asegurando el mantenimiento de un **estilo de vida óptimo** y la prevención de futuros factores de estrés.",
+                "Centro de Bienestar General"
+            ));
+             recommendations.add(new Recommendation(
+                "Participación en Extensión Cultural",
+                "Explorar y comprometerse con al menos dos **actividades extracurriculares o clubes** universitarios para fomentar el **equilibrio entre vida académica y personal** y fortalecer la conexión con la comunidad.",
+                "Departamento de Extensión Cultural"
+            ));
+        }
+        
+        return recommendations;
     }
 }
