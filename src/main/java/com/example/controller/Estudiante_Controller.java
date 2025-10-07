@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.Datos.CorrelationResult;
+import com.example.demo.Datos.FactorDTO;
 import com.example.demo.Datos.Recommendation;
 import com.example.demo.Datos.RiskSegment;
 import com.example.demo.Datos.RiskSummary; // IMPORTACIÓN NECESARIA para el nuevo endpoint
@@ -166,5 +167,11 @@ public class Estudiante_Controller {
             .toList();
 
         return ResponseEntity.ok(highRiskStudents);
+    }
+    
+    @GetMapping("/risk/factors")
+    public ResponseEntity<List<FactorDTO>> getStressFactors() {
+        List<FactorDTO> factors = dataService.getTopStressFactors();
+        return ResponseEntity.ok(factors);
     }
 }

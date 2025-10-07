@@ -6,14 +6,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.model.Estudiante;
+import com.example.demo.Datos.FactorDTO;
 import com.example.demo.repository.Repository_Estudiante;
-import java.util.stream.Collectors;
+
 
 @Service
 public class DataService {
@@ -25,7 +27,7 @@ public class DataService {
     }
 
     // -------------------------------------------------------------
-    // RIMP3.3: Procesa archivo CSV (Añadida Lógica de Riesgo)
+    // RIMP3.3: Procesa archivo CSV (Lógica existente y correcta)
     // -------------------------------------------------------------
     @Transactional
     public int processAndSaveStudents(MultipartFile file) throws IOException {
@@ -36,32 +38,21 @@ public class DataService {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                // Usar -1 para que no descarte campos vacíos al final de la línea.
                 String[] values = line.split(",", -1);
                 
-                // Se espera un total de 26 campos (id, nombre, email, edad, carrera + 21 scores)
                 if (values.length >= 26) { 
                     try {
                         Estudiante estudiante = new Estudiante();
-                        // 1. id_estudiante (Long)
+                        // ... Lógica de parseo y asignación de campos (dejada igual) ...
                         estudiante.setIdEstudiante(Long.parseLong(values[0].trim()));
-                        // 2. nombre (String)
                         estudiante.setNombre(values[1].trim());
-                        // 3. email (String)
                         estudiante.setEmail(values[2].trim());
-                        
-                        // 🚨 CAMPO EDAD INSERTADO (Índice 3)
                         try {
                             estudiante.setEdad(Integer.parseInt(values[3].trim())); 
                         } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                            // Manejo de error local para Edad. Asigna null si falla.
                             estudiante.setEdad(null); 
                         }
-                        
-                        // 4. carrera (String) - ÍNDICE CORREGIDO a 4
                         estudiante.setCarrera(values[4].trim());
-                        
-                        // 5. a 25. Campos Integer (anxiety_level a stress_level) - Índices 5 a 25
                         estudiante.setAnxietyLevel(Integer.parseInt(values[5].trim()));
                         estudiante.setSelfEsteem(Integer.parseInt(values[6].trim()));
                         estudiante.setMentalHealthHistory(Integer.parseInt(values[7].trim()));
@@ -82,10 +73,9 @@ public class DataService {
                         estudiante.setPeerPressure(Integer.parseInt(values[22].trim()));
                         estudiante.setExtracurricularActivities(Integer.parseInt(values[23].trim()));
                         estudiante.setBullying(Integer.parseInt(values[24].trim()));
-                        estudiante.setStressLevel(Integer.parseInt(values[25].trim())); // Último índice (25)
+                        estudiante.setStressLevel(Integer.parseInt(values[25].trim()));
 
-
-                        // 🚨 Calcular riesgo para el estudiante importado
+                        // Calcular riesgo para el estudiante importado
                         estudiante.setNivelRiesgo(calcularNivelRiesgo(estudiante));
                         
                         estudiantes.add(estudiante);
@@ -114,30 +104,23 @@ public class DataService {
         return estudianteRepository.findById(id);
     }
 
-    // -------------------------------------------------------------
-    // 3. Crear (o Guardar) un estudiante (Añadida Lógica de Riesgo)
-    // -------------------------------------------------------------
+    // 3. Crear (o Guardar) un estudiante
     public Estudiante saveEstudiante(Estudiante estudiante) {
-        // 🚨 PASO CLAVE: Calcular el riesgo ANTES de llamar al repositorio
         String riesgoCalculado = calcularNivelRiesgo(estudiante);
         estudiante.setNivelRiesgo(riesgoCalculado);
         
         return estudianteRepository.save(estudiante);
     }
 
-    // -------------------------------------------------------------
-    // 4. Actualizar un estudiante (Añadida Lógica de Riesgo y Edad)
-    // -------------------------------------------------------------
+    // 4. Actualizar un estudiante
     @Transactional 
     public Optional<Estudiante> updateEstudiante(Long id, Estudiante estudianteDetails) {
         return estudianteRepository.findById(id).map(estudianteExistente -> {
-            // Actualizar campos básicos
+            // ... Actualizar todos los campos (dejado igual) ...
             estudianteExistente.setNombre(estudianteDetails.getNombre());
             estudianteExistente.setEmail(estudianteDetails.getEmail());
             estudianteExistente.setCarrera(estudianteDetails.getCarrera());
-            estudianteExistente.setEdad(estudianteDetails.getEdad()); // 🚨 Campo Edad
-
-            // Actualizar todos los scores
+            estudianteExistente.setEdad(estudianteDetails.getEdad()); 
             estudianteExistente.setAnxietyLevel(estudianteDetails.getAnxietyLevel());
             estudianteExistente.setSelfEsteem(estudianteDetails.getSelfEsteem());
             estudianteExistente.setMentalHealthHistory(estudianteDetails.getMentalHealthHistory());
@@ -160,7 +143,7 @@ public class DataService {
             estudianteExistente.setBullying(estudianteDetails.getBullying());
             estudianteExistente.setStressLevel(estudianteDetails.getStressLevel());
 
-            // 🚨 Volver a calcular el riesgo con los datos actualizados
+            // Volver a calcular el riesgo
             String riesgoCalculado = calcularNivelRiesgo(estudianteExistente); 
             estudianteExistente.setNivelRiesgo(riesgoCalculado);
             
@@ -177,19 +160,15 @@ public class DataService {
         return false;
     }
 
-    // -------------------------------------------------------------
-    // 6. Método: Lógica de Cálculo de Riesgo
-    // -------------------------------------------------------------
+    // 6. Método: Lógica de Cálculo de Riesgo (dejada igual)
     private String calcularNivelRiesgo(Estudiante estudiante) {
-        // Lógica de cálculo: Suma de indicadores clave (AJÚSTALA a tus reglas)
         int sumScores = 0;
         
-        // Sumamos los scores de Ansiedad, Depresión y Estrés.
         sumScores += Optional.ofNullable(estudiante.getAnxietyLevel()).orElse(0);
         sumScores += Optional.ofNullable(estudiante.getDepression()).orElse(0);
         sumScores += Optional.ofNullable(estudiante.getStressLevel()).orElse(0);
         
-        // Asumiendo que el score máximo total es 30 (3 indicadores * 10 puntos)
+        // Reglas de clasificación:
         if (sumScores >= 25) {
             return "ALTO";
         }
@@ -199,15 +178,63 @@ public class DataService {
         return "BAJO";
     }
     
-    // -------------------------------------------------------------
-    // 7. 🚨 MÉTODO FALTANTE (SOLUCIÓN AL BUG DE CONTEO REAL)
-    // -------------------------------------------------------------
+    // ----------------------------------------------------------------------
+    // 7. ✅ NUEVO MÉTODO REAL: Conteo por Nivel de Riesgo (Gráfico de Barras)
+    // ----------------------------------------------------------------------
     /**
      * Devuelve el número de estudiantes que coinciden con el nivel de riesgo dado.
-     * Este método es usado por RiskAnalysisService para obtener los conteos reales y corregir el bug.
+     * Usado para alimentar el Gráfico de Barras.
      */
     public int countStudentsByRiskLevel(String nivel) {
-        // La implementación se basa en el método countByNivelRiesgo() que debes añadir al Repositorio.
+        // Esto depende de que hayas añadido el método en tu Repository_Estudiante
         return estudianteRepository.countByNivelRiesgo(nivel).intValue();
+    }
+
+    // ----------------------------------------------------------------------
+    // 8. ✅ NUEVO MÉTODO REAL: Obtener Factores de Estrés (Gráfico Circular)
+    // ----------------------------------------------------------------------
+    /**
+     * Calcula los porcentajes reales de los principales factores de estrés
+     * basándose en un umbral de riesgo (score >= 8).
+     */
+    public List<FactorDTO> getTopStressFactors() {
+        List<Estudiante> todosEstudiantes = estudianteRepository.findAll();
+        long total = todosEstudiantes.size();
+        if (total == 0) return List.of();
+
+        // 🚨 UMBRAL DE RIESGO: Un score de 8 o más en el factor se considera riesgo.
+        final int UMBRAL_RIESGO = 8; 
+
+        // 1. Contadores basados en el umbral
+        long countCargaAcademica = todosEstudiantes.stream()
+            .filter(e -> Optional.ofNullable(e.getStudyLoad()).orElse(0) >= UMBRAL_RIESGO)
+            .count();
+            
+        // Se asume que en Sleep Quality, un score bajo es riesgo (ej: 0, 1, 2)
+        // Por lo tanto, el riesgo es: 10 - UMBRAL_RIESGO (e.g., 10 - 8 = 2 o menos)
+        long countProblemasSueno = todosEstudiantes.stream()
+            .filter(e -> Optional.ofNullable(e.getSleepQuality()).orElse(0) <= (10 - UMBRAL_RIESGO)) 
+            .count();
+            
+        long countPreocupacionCarrera = todosEstudiantes.stream()
+            .filter(e -> Optional.ofNullable(e.getFutureCareerConcerns()).orElse(0) >= UMBRAL_RIESGO)
+            .count();
+
+        // 2. Crear DTOs con los porcentajes reales
+        List<FactorDTO> factors = new ArrayList<>();
+        
+        factors.add(new FactorDTO("Carga Académica", (double) countCargaAcademica / total));
+        factors.add(new FactorDTO("Problemas de Sueño", (double) countProblemasSueno / total));
+        factors.add(new FactorDTO("Preocupación Profesional", (double) countPreocupacionCarrera / total));
+        
+        // 3. Calcular "Otros" (para que el gráfico circular sume 100%)
+        double totalPorcentajeFactores = factors.stream().mapToDouble(FactorDTO::getPorcentaje).sum();
+        double porcentajeOtros = Math.max(0, 1.0 - totalPorcentajeFactores);
+        factors.add(new FactorDTO("Otros", porcentajeOtros));
+
+        // Ordenar por porcentaje descendente (mejor visualización)
+        return factors.stream()
+               .sorted((f1, f2) -> Double.compare(f2.getPorcentaje(), f1.getPorcentaje()))
+               .collect(Collectors.toList());
     }
 }
