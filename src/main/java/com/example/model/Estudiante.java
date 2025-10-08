@@ -11,6 +11,7 @@ import jakarta.persistence.*;
 public class Estudiante {
 
     @Id
+    
     @Column(name = "id_estudiante")
     private Long idEstudiante;  // <-- SIN @GeneratedValue
 
@@ -19,73 +20,91 @@ public class Estudiante {
 
     @Column(name = "email")
     private String email;
+    
+    @Column(name = "carrera")
+    private String carrera; 
 
-    @Column(name = "anxiety_level")
+    // 🚨 CAMPO AGREGADO 1: Edad
+    @Column(name = "edad") 
+    private Integer edad;
+
+    // 🚨 CAMPO AGREGADO 2: Nivel de Riesgo
+    @Column(name = "nivel_riesgo") 
+    private String nivelRiesgo;
+
+    @Column(name = "anxiety_level", columnDefinition = "SMALLINT")
     private Integer anxietyLevel;
 
-    @Column(name = "self_esteem")
+    @Column(name = "self_esteem", columnDefinition = "SMALLINT")
     private Integer selfEsteem;
 
-    @Column(name = "mental_health_history")
+    @Column(name = "mental_health_history", columnDefinition = "SMALLINT")
     private Integer mentalHealthHistory;
 
-    @Column(name = "depression")
+    @Column(name = "depression", columnDefinition = "SMALLINT")
     private Integer depression;
 
-    @Column(name = "headache")
+    @Column(name = "headache", columnDefinition = "SMALLINT")
     private Integer headache;
 
-    @Column(name = "blood_pressure")
+    @Column(name = "blood_pressure", columnDefinition = "SMALLINT")
     private Integer bloodPressure;
 
-    @Column(name = "sleep_quality")
+    @Column(name = "sleep_quality", columnDefinition = "SMALLINT")
     private Integer sleepQuality;
 
-    @Column(name = "breathing_problem")
+    @Column(name = "breathing_problem", columnDefinition = "SMALLINT")
     private Integer breathingProblem;
 
-    @Column(name = "noise_level")
+    @Column(name = "noise_level", columnDefinition = "SMALLINT")
     private Integer noiseLevel;
 
-    @Column(name = "living_conditions")
+    @Column(name = "living_conditions", columnDefinition = "SMALLINT")
     private Integer livingConditions;
 
-    @Column(name = "safety")
+    @Column(name = "safety", columnDefinition = "SMALLINT")
     private Integer safety;
 
-    @Column(name = "basic_needs")
+    @Column(name = "basic_needs", columnDefinition = "SMALLINT")
     private Integer basicNeeds;
 
-    @Column(name = "academic_performance")
+    @Column(name = "academic_performance", columnDefinition = "SMALLINT")
     private Integer academicPerformance;
 
-    @Column(name = "study_load")
+    @Column(name = "study_load", columnDefinition = "SMALLINT")
     private Integer studyLoad;
 
-    @Column(name = "teacher_student_relationship")
+    @Column(name = "teacher_student_relationship", columnDefinition = "SMALLINT")
     private Integer teacherStudentRelationship;
 
-    @Column(name = "future_career_concerns")
+    @Column(name = "future_career_concerns", columnDefinition = "SMALLINT")
     private Integer futureCareerConcerns;
 
-    @Column(name = "social_support")
+    @Column(name = "social_support", columnDefinition = "SMALLINT")
     private Integer socialSupport;
 
-    @Column(name = "peer_pressure")
+    @Column(name = "peer_pressure", columnDefinition = "SMALLINT")
     private Integer peerPressure;
 
-    @Column(name = "extracurricular_activities")
+    @Column(name = "extracurricular_activities", columnDefinition = "SMALLINT")
     private Integer extracurricularActivities;
 
-    @Column(name = "bullying")
+    @Column(name = "bullying", columnDefinition = "SMALLINT")
     private Integer bullying;
 
-    @Column(name = "stress_level")
+    @Column(name = "stress_level", columnDefinition = "SMALLINT")
     private Integer stressLevel;
+
+  
+
+    public Estudiante() {
+        // Constructor vacío requerido por JPA
+    }
 
     @ManyToOne
     @JoinColumn(name = "id_Consejero")
     @JsonBackReference(value = "consejero-estudiantes")
+
     private Consejero consejero;
 
 
@@ -93,12 +112,56 @@ public class Estudiante {
     @JoinColumn(name = "id_analisis", referencedColumnName = "id_analisis")
     private Analisis_Riesgo analisis_riesgo;
 
+
     @OneToMany(mappedBy = "estudiante")
     @JsonManagedReference
+
+  
     private List<Recomendacion> recomendaciones;
 
-    // Constructor vacío
-    public Estudiante() {}
+
+    
+
+	public Estudiante(Long idEstudiante, String nombre, String email, String carrera, Integer edad, String nivelRiesgo,
+			Integer anxietyLevel, Integer selfEsteem, Integer mentalHealthHistory, Integer depression, Integer headache,
+			Integer bloodPressure, Integer sleepQuality, Integer breathingProblem, Integer noiseLevel,
+			Integer livingConditions, Integer safety, Integer basicNeeds, Integer academicPerformance,
+			Integer studyLoad, Integer teacherStudentRelationship, Integer futureCareerConcerns, Integer socialSupport,
+			Integer peerPressure, Integer extracurricularActivities, Integer bullying, Integer stressLevel,
+			Consejero consejero, Analisis_Riesgo analisis_riesgo, List<Recomendacion> recomendaciones) {
+		super();
+		this.idEstudiante = idEstudiante;
+		this.nombre = nombre;
+		this.email = email;
+		this.carrera = carrera;
+		this.edad = edad;
+		this.nivelRiesgo = nivelRiesgo;
+		this.anxietyLevel = anxietyLevel;
+		this.selfEsteem = selfEsteem;
+		this.mentalHealthHistory = mentalHealthHistory;
+		this.depression = depression;
+		this.headache = headache;
+		this.bloodPressure = bloodPressure;
+		this.sleepQuality = sleepQuality;
+		this.breathingProblem = breathingProblem;
+		this.noiseLevel = noiseLevel;
+		this.livingConditions = livingConditions;
+		this.safety = safety;
+		this.basicNeeds = basicNeeds;
+		this.academicPerformance = academicPerformance;
+		this.studyLoad = studyLoad;
+		this.teacherStudentRelationship = teacherStudentRelationship;
+		this.futureCareerConcerns = futureCareerConcerns;
+		this.socialSupport = socialSupport;
+		this.peerPressure = peerPressure;
+		this.extracurricularActivities = extracurricularActivities;
+		this.bullying = bullying;
+		this.stressLevel = stressLevel;
+		this.consejero = consejero;
+		this.analisis_riesgo = analisis_riesgo;
+		this.recomendaciones = recomendaciones;
+	}
+
 
     // Constructor completo
     public Estudiante(Long idEstudiante, String nombre, String email, Integer anxietyLevel, Integer selfEsteem,
@@ -158,9 +221,37 @@ public class Estudiante {
         return email;
     }
 
+
     public void setEmail(String email) {
         this.email = email;
     }
+
+	public String getCarrera() {
+		return carrera;
+	}
+
+	public void setCarrera(String carrera) {
+		this.carrera = carrera;
+	}
+
+	public Integer getEdad() {
+		return edad;
+	}
+
+	public void setEdad(Integer edad) {
+		this.edad = edad;
+	}
+
+	public String getNivelRiesgo() {
+		return nivelRiesgo;
+	}
+
+	public void setNivelRiesgo(String nivelRiesgo) {
+		this.nivelRiesgo = nivelRiesgo;
+	}
+
+	
+	
 
     public Integer getAnxietyLevel() {
         return anxietyLevel;
@@ -346,6 +437,7 @@ public class Estudiante {
         this.analisis_riesgo = analisis_riesgo;
     }
 
+
     public List<Recomendacion> getRecomendaciones() {
         return recomendaciones;
     }
@@ -354,3 +446,7 @@ public class Estudiante {
         this.recomendaciones = recomendaciones;
     }
 }
+
+    
+
+

@@ -1,6 +1,7 @@
 package com.example.demo.Service;
 
 import com.example.demo.repository.Repository_Estudiante;
+import com.example.model.Consejero;
 import com.example.model.Estudiante;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -22,7 +23,12 @@ public class CSVService {
     @Autowired
     private Repository_Estudiante studentRepository;
 
-    public List<Estudiante> processCsvFile(MultipartFile file) throws IOException {
+    // 👇 CAMBIO 1: Inyecta el servicio de análisis de riesgo
+    @Autowired
+    private RiskAnalysisService riskAnalysisService;
+   
+
+    public List<Estudiante> processCsvFile(MultipartFile file, Consejero consejero) throws IOException {
         List<Estudiante> students = new ArrayList<>();
 
         try (BufferedReader fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
@@ -31,36 +37,47 @@ public class CSVService {
 
             for (CSVRecord csvRecord : csvParser) {
                 Estudiante student = new Estudiante();
-                // Mapeo de columnas del CSV a los campos de la entidad Estudiante
-                student.setIdEstudiante(Long.parseLong(csvRecord.get("id_estudiante")));
+
+                // Mapeo de columnas del CSV (sin cambios)
+                student.setIdEstudiante(Long.parseLong(csvRecord.get("idEstudiante")));
                 student.setNombre(csvRecord.get("nombre"));
                 student.setEmail(csvRecord.get("email"));
-                student.setAnxietyLevel(Integer.parseInt(csvRecord.get("anxiety_level")));
-                student.setSelfEsteem(Integer.parseInt(csvRecord.get("self_esteem")));
-                student.setMentalHealthHistory(Integer.parseInt(csvRecord.get("mental_health_history")));
+                // ... (todos los demás campos del estudiante)
+                student.setAnxietyLevel(Integer.parseInt(csvRecord.get("anxietyLevel")));
+                student.setSelfEsteem(Integer.parseInt(csvRecord.get("selfEsteem")));
+                student.setMentalHealthHistory(Integer.parseInt(csvRecord.get("mentalHealthHistory")));
                 student.setDepression(Integer.parseInt(csvRecord.get("depression")));
                 student.setHeadache(Integer.parseInt(csvRecord.get("headache")));
-                student.setBloodPressure(Integer.parseInt(csvRecord.get("blood_pressure")));
-                student.setSleepQuality(Integer.parseInt(csvRecord.get("sleep_quality")));
-                student.setBreathingProblem(Integer.parseInt(csvRecord.get("breathing_problem")));
-                student.setNoiseLevel(Integer.parseInt(csvRecord.get("noise_level")));
-                student.setLivingConditions(Integer.parseInt(csvRecord.get("living_conditions")));
+                student.setBloodPressure(Integer.parseInt(csvRecord.get("bloodPressure")));
+                student.setSleepQuality(Integer.parseInt(csvRecord.get("sleepQuality")));
+                student.setBreathingProblem(Integer.parseInt(csvRecord.get("breathingProblem")));
+                student.setNoiseLevel(Integer.parseInt(csvRecord.get("noiseLevel")));
+                student.setLivingConditions(Integer.parseInt(csvRecord.get("livingConditions")));
                 student.setSafety(Integer.parseInt(csvRecord.get("safety")));
-                student.setBasicNeeds(Integer.parseInt(csvRecord.get("basic_needs")));
-                student.setAcademicPerformance(Integer.parseInt(csvRecord.get("academic_performance")));
-                student.setStudyLoad(Integer.parseInt(csvRecord.get("study_load")));
-                student.setTeacherStudentRelationship(Integer.parseInt(csvRecord.get("teacher_student_relationship")));
-                student.setFutureCareerConcerns(Integer.parseInt(csvRecord.get("future_career_concerns")));
-                student.setSocialSupport(Integer.parseInt(csvRecord.get("social_support")));
-                student.setPeerPressure(Integer.parseInt(csvRecord.get("peer_pressure")));
-                student.setExtracurricularActivities(Integer.parseInt(csvRecord.get("extracurricular_activities")));
+                student.setBasicNeeds(Integer.parseInt(csvRecord.get("basicNeeds")));
+                student.setAcademicPerformance(Integer.parseInt(csvRecord.get("academicPerformance")));
+                student.setStudyLoad(Integer.parseInt(csvRecord.get("studyLoad")));
+                student.setTeacherStudentRelationship(Integer.parseInt(csvRecord.get("teacherStudentRelationship")));
+                student.setFutureCareerConcerns(Integer.parseInt(csvRecord.get("futureCareerConcerns")));
+                student.setSocialSupport(Integer.parseInt(csvRecord.get("socialSupport")));
+                student.setPeerPressure(Integer.parseInt(csvRecord.get("peerPressure")));
+                student.setExtracurricularActivities(Integer.parseInt(csvRecord.get("extracurricularActivities")));
                 student.setBullying(Integer.parseInt(csvRecord.get("bullying")));
-                student.setStressLevel(Integer.parseInt(csvRecord.get("stress_level")));
+                student.setStressLevel(Integer.parseInt(csvRecord.get("stressLevel")));
+                student.setCarrera(csvRecord.get("carrera"));
+                student.setEdad(Integer.parseInt(csvRecord.get("edad")));
+                
+                // Asigna el consejero actual al estudiante
+                student.setConsejero(consejero);
+
+                // 👇 CAMBIO 2: Llama al nuevo método para calcular y asignar el nivel de riesgo
+                String riskLevel = riskAnalysisService.calculateRiskLevel(student);
+                student.setNivelRiesgo(riskLevel);
 
                 students.add(student);
             }
 
-            // Guarda todos los estudiantes en la base de datos en una sola operación
+            // Guarda todos los estudiantes en la base de datos
             return studentRepository.saveAll(students);
         }
     }
