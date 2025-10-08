@@ -19,21 +19,22 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+    	
         // Solo crea el usuario si no existe ninguno en la base de datos
         if (consejeroRepository.count() == 0) {
             System.out.println(">>> Creando consejero de prueba...");
 
             Consejero consejero = new Consejero();
             
-            // ¡IMPORTANTE! Usa exactamente el mismo email con el que inicias sesión en el frontend.
-            // Por ejemplo, el que usaste en Postman.
-            consejero.setEmail("carlos.perez@example.com"); 
-            consejero.setPassword(passwordEncoder.encode("clave123")); // Contraseña encriptada
+            //  email con el que inicia sesión en el frontend y contraseña .
             
-            // ESTA LÍNEA ES CORRECTA. Asigna el rol que configuramos en SecurityConfig.
+            consejero.setEmail("carlos.perez@example.com"); 
+            consejero.setPassword(passwordEncoder.encode("clave123")); // Contraseña encriptada 
+            
+            //  Asigna el rol 
             consejero.setRol("CONSEJERO"); 
 
-            // Datos adicionales que ya tenías
+            // Datos adicionales consejero
             consejero.setNombre("Carlos Pérez");
             consejero.setUsername("carlos.perez");
             consejero.setFecha_creacion(new Date());
